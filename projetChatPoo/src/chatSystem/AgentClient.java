@@ -42,7 +42,7 @@ public class AgentClient {
 		String pseudo = scan.next();
 		scan.close();
 		
-		System.out.println("Pseudo choisit :" + pseudo + " , envoie aux autres users en cours ...");
+		System.out.println("Pseudo choisit : " + pseudo + " , envoie aux autres users en cours ...");
 
 
 		
