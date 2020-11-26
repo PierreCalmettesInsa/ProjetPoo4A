@@ -1,5 +1,3 @@
-package chatSystem;
-
 import java.io.*;
 import java.util.*;
 
