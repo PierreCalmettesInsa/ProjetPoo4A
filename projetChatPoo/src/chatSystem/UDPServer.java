@@ -30,10 +30,10 @@ public class UDPServer {
                 //attente de reception
                 server.receive(packet);
                 
-                //Affiche le résultat
+                //Affiche le resultat
                 String str = new String(packet.getData());
 
-                System.out.println("Reçu de la part de " + packet.getAddress() 
+                System.out.println("Recu de la part de " + packet.getAddress() 
                 + " sur le port " + packet.getPort() + " : " + str);
                 
                 
@@ -41,16 +41,16 @@ public class UDPServer {
                 packet.setLength(buffer.length);
                 
                 //reponse
-                byte[] buffer2 = new String("Reponse du serveur à " + str + "! ").getBytes();
+                byte[] buffer2 = new String("Reponse du serveur a " + str + "! ").getBytes();
                 DatagramPacket packet2 = new DatagramPacket(
                                      buffer2,             //Les donnees 
-                                     buffer2.length,      //La taille des données
-                                     packet.getAddress(), //L'adresse de l'émetteur
-                                     packet.getPort()     //Le port de l'émetteur
+                                     buffer2.length,      //La taille des donnees
+                                     packet.getAddress(), //L'adresse de l'emetteur
+                                     packet.getPort()     //Le port de l'emetteur
                                      
                 );
                 
-                //Et on envoie vers l'émetteur du datagramme reçu précédemment
+                //Et on envoie vers l'emetteur du datagramme recu precedemment
                 server.send(packet2);
                 packet2.setLength(buffer2.length);
                 

@@ -1,23 +1,29 @@
 package chatSystem;
 
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class AgentClient {
 	
 	protected String address ;
 	protected int port ;
+	protected ArrayList<String> listOfPseudo ;
 	
 	
 	public AgentClient(String address, int port)
 	{
 		this.address = address ;
 		this.port = port ;
+		listOfPseudo = new ArrayList<String>() ;
 		
 	}
 	
 	
-	
+	public ArrayList<String> getAllPseudos(){
+		return this.listOfPseudo ;
+	}
 	
 	
 	public static void main(String[] args) {
@@ -42,19 +48,16 @@ public class AgentClient {
 		String pseudo = scan.next();
 		scan.close();
 		
-		System.out.println("Pseudo choisit : " + pseudo + " , envoie aux autres users en cours ...");
+		System.out.println("Pseudo choisit :" + pseudo + " , envoie aux autres users en cours ...");
 
 
 		
 		//Envoie un broadcast a tous les autres users si ce n'est pas le premier
-		UDPClient clientUdp = new UDPClient(pseudo,port,address);
-		
-		Thread envoiePseudo = new Thread(clientUdp);
-		envoiePseudo.start();
-		
-		
-		
-		
+		for (int i = 0; i<3;i++) {
+			UDPClient clientUdp = new UDPClient(pseudo,port + i,address, client.getAllPseudos());
+			Thread envoiePseudo = new Thread(clientUdp);
+			envoiePseudo.start();
+		}
 		
 		
 		
