@@ -101,15 +101,13 @@ public class AgentClient {
 		}		
 
 		client.listOfPseudo.add(pseudo);
-		client.listOfPseudo.add(pseudo);
 
-		
 		
 		System.out.println("Connected !");
 		
 		
 		//when connected, create udp server
-		UDPServer serverUdp = new UDPServer(port);
+		UDPServer serverUdp = new UDPServer(port, client.listOfPseudo);
 		Thread server = serverUdp.setServer();
 		server.start();
 		

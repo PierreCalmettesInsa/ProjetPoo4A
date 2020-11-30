@@ -46,20 +46,22 @@ public class UDPClient {
 	               
 	               byte[] bufRecept = new byte[8196];
 	               DatagramPacket packet2 = new DatagramPacket(bufRecept, bufRecept.length, adresse, port);
-           
 	               client.receive(packet2);
-	               ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream(packet2.getData()));
+
+
 	               
-	               try {
-					allPseudos = (ArrayList<String>) inputStream.readObject();
-	               } catch (ClassNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+	               while (new String(packet2.getData()) != "Finished")
+	               {
+		               System.out.println(packetPseudoToClient + " a recu une reponse du serveur : " + (new String(packet2.getData())));
+	            	   allPseudos.add(new String(packet2.getData()));
+	            	   packet.setData(bufEnvoie);
+	            	   client.send(packet);
+		               byte[] newBufRecept = new byte[8196];
+	            	   packet2.setData(newBufRecept);
+		               client.receive(packet2);
+	            	   
 	               }
 	               
-	               System.out.println(packetPseudoToClient + " a recu une reponse du serveur : " + (new String(packet2.getData())));
-	               
-               
             } catch (SocketException e) {
                e.printStackTrace();
             } catch (UnknownHostException e) {
