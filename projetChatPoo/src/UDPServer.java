@@ -11,12 +11,15 @@ public class UDPServer {
 	
 	protected int port ;
 	protected ArrayList<String> allPseudos ;
+
 	
 	public UDPServer(int port,  ArrayList<String> allPseudos)
 	{
 		this.port = port;
 		this.allPseudos = allPseudos ;
 	}
+	
+
 	
 	public Thread setServer() {
 	 Thread t = new Thread(new Runnable(){
@@ -47,14 +50,33 @@ public class UDPServer {
 	                
 	                //Affiche le resultat
 	                String newPseudo = new String(packet.getData());
+
+
 	
 	                System.out.println("Recu de la part de " + packet.getAddress() 
 	                + " sur le port " + packet.getPort() + " : " + newPseudo);
 	                
 	                
-	                //Reset du paquet pour reutilisation
-	                packet.setLength(buffer.length);
+	  
 	                
+	              
+	                if (allPseudos.contains(newPseudo)){
+	                	System.out.println("Connexion refusee, pseudo deja utilise");
+	                	byte[] buffer2 = (new String("Refused")).getBytes();
+		                DatagramPacket packet2 = new DatagramPacket(
+		                                     buffer2,             //Les donnees 
+		                                     buffer2.length,      //La taille des donnees
+		                                     packet.getAddress(), //L'adresse de l'emetteur
+		                                     packet.getPort()     //Le port de l'emetteur
+		                                     
+		                );
+		                
+		                //Reset du paquet pour reutilisation
+		                packet.setLength(buffer.length);
+		                
+		                //Et on envoie vers l'emetteur du datagramme recu precedemment
+		                server.send(packet2);
+	                }else {
 	                //reponse
 	                for (String pseudo : allPseudos) {
 	                	System.out.println("Envoie de : " + pseudo);
@@ -76,7 +98,11 @@ public class UDPServer {
 	                
 	                //Ajout du nouveau client dans la liste
 	                allPseudos.add(newPseudo);
+	                }
+	                
 	   	       	 	server.close();
+	   	       	 	
+
 
 	        	
 		        } catch (SocketException e) {

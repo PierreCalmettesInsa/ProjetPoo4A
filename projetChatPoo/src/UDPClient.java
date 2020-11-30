@@ -16,6 +16,7 @@ public class UDPClient {
 	protected String pseudo ;
 
 	protected ArrayList<String> allPseudos ;
+	protected boolean isConnected ;
 	
 	
 	
@@ -23,8 +24,12 @@ public class UDPClient {
 	{
 		this.pseudo = pseudo;
 		this.allPseudos = allPseudos;
+		isConnected = true ;
 	}
 	
+	public ArrayList<String> getList(){
+		return this.allPseudos ;
+	}
 	
 		 
 	public Runnable send_pseudo(String address, int port){
@@ -47,20 +52,25 @@ public class UDPClient {
 	               byte[] bufRecept = new byte[8196];
 	               DatagramPacket packet2 = new DatagramPacket(bufRecept, bufRecept.length, adresse, port);
 	               client.receive(packet2);
-
-
-	               
-	               while (new String(packet2.getData()) != "Finished")
-	               {
-		               System.out.println(packetPseudoToClient + " a recu une reponse du serveur : " + (new String(packet2.getData())));
-	            	   allPseudos.add(new String(packet2.getData()));
-	            	   packet.setData(bufEnvoie);
-	            	   client.send(packet);
-		               byte[] newBufRecept = new byte[8196];
-	            	   packet2.setData(newBufRecept);
-		               client.receive(packet2);
-	            	   
+	               if ((new String(packet2.getData())) == "Refused") {
+	            	   System.out.println("Choisir un nouveau pseudo");
+	            	   isConnected = false ;
 	               }
+	               else {
+		               while (new String(packet2.getData()) != "Finished")
+		               {
+			               System.out.println(packetPseudoToClient + " a recu une reponse du serveur : " + (new String(packet2.getData())));
+		            	   allPseudos.add(new String(packet2.getData()));
+		            	   packet.setData(bufEnvoie);
+		            	   client.send(packet);
+			               byte[] newBufRecept = new byte[8196];
+		            	   packet2.setData(newBufRecept);
+			               client.receive(packet2);
+		            	   
+		               }
+	               }
+	               client.close();
+
 	               
             } catch (SocketException e) {
                e.printStackTrace();
