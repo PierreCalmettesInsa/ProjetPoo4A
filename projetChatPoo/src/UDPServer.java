@@ -5,12 +5,13 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 public class UDPServer {
 	
 	protected int port ;
-	protected ArrayList<String> allPseudos ;
+	public ArrayList<String> allPseudos ;
 
 	
 	public UDPServer(int port,  ArrayList<String> allPseudos)
@@ -33,9 +34,7 @@ public class UDPServer {
 	                
 	                //Seulement pour les tests
 	                if (allPseudos.size() < 2) {
-		            	allPseudos.add("Georges");
 		            	allPseudos.add("Test");
-		            	allPseudos.add("Test1");
 	                }
 	
 	            		
@@ -49,15 +48,15 @@ public class UDPServer {
 	                server.receive(packet);
 	                
 	                //Affiche le resultat
-	                String newPseudo = new String(packet.getData());
+	                String newPseudo = new String(packet.getData(), StandardCharsets.UTF_8);
 
 
 	
 	                System.out.println("Recu de la part de " + packet.getAddress() 
-	                + " sur le port " + packet.getPort() + " : " + newPseudo);
+	                + " sur le port " + packet.getPort() + " :" + newPseudo + ".");
 	                
 	                
-	  
+	                System.out.println(allPseudos.contains(newPseudo));
 	                
 	              
 	                if (allPseudos.contains(newPseudo)){
@@ -71,11 +70,9 @@ public class UDPServer {
 		                                     
 		                );
 		                
-		                //Reset du paquet pour reutilisation
-		                packet.setLength(buffer.length);
-		                
 		                //Et on envoie vers l'emetteur du datagramme recu precedemment
 		                server.send(packet2);
+		                
 	                }else {
 	                //reponse
 	                for (String pseudo : allPseudos) {
@@ -95,6 +92,17 @@ public class UDPServer {
 		                packet.setData(buffer);
 		                server.receive(packet);
 	                }
+	                
+	                //On envoie Finished
+	                byte[] buffer2 = (new String("Finished")).getBytes();
+	                DatagramPacket packet2 = new DatagramPacket(
+	                                     buffer2,             //Les donnees 
+	                                     buffer2.length,      //La taille des donnees
+	                                     packet.getAddress(), //L'adresse de l'emetteur
+	                                     packet.getPort()     //Le port de l'emetteur
+	                                     
+	                );
+	                server.send(packet2);
 	                
 	                //Ajout du nouveau client dans la liste
 	                allPseudos.add(newPseudo);

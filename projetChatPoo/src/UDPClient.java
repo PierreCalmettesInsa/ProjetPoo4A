@@ -37,7 +37,7 @@ public class UDPClient {
             byte[] bufEnvoie = packetPseudoToClient.getBytes();
             
             try {
-	               System.out.println(packetPseudoToClient + " envoie : " + packetPseudoToClient + "to : " + address + " " + port);
+	               System.out.println(packetPseudoToClient + " envoie : " + packetPseudoToClient + " to : " + address + " " + port);
 
 	               DatagramSocket client = new DatagramSocket();
 	               
@@ -52,20 +52,24 @@ public class UDPClient {
 	               byte[] bufRecept = new byte[8196];
 	               DatagramPacket packet2 = new DatagramPacket(bufRecept, bufRecept.length, adresse, port);
 	               client.receive(packet2);
-	               if ((new String(packet2.getData())) == "Refused") {
+	               String paquetCourant = new String(packet2.getData());
+	               System.out.println(paquetCourant);
+	               
+	               if (paquetCourant.equals("Refused")) {
 	            	   System.out.println("Choisir un nouveau pseudo");
 	            	   isConnected = false ;
 	               }
 	               else {
-		               while (new String(packet2.getData()) != "Finished")
+		               while (!paquetCourant.equals("Finished"))
 		               {
-			               System.out.println(packetPseudoToClient + " a recu une reponse du serveur : " + (new String(packet2.getData())));
+		            	   System.out.println(packetPseudoToClient + " a recu une reponse du serveur : " + paquetCourant);
 		            	   allPseudos.add(new String(packet2.getData()));
 		            	   packet.setData(bufEnvoie);
 		            	   client.send(packet);
 			               byte[] newBufRecept = new byte[8196];
 		            	   packet2.setData(newBufRecept);
 			               client.receive(packet2);
+			               paquetCourant = new String(packet2.getData());
 		            	   
 		               }
 	               }

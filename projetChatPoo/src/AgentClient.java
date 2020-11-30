@@ -74,7 +74,7 @@ public class AgentClient {
 			es.execute(new ClientRunnable(address, port-i,clientUdp));
 		}
 		try {
-			boolean finished = es.awaitTermination(10, TimeUnit.SECONDS);
+			boolean finished = es.awaitTermination(4, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -147,7 +147,7 @@ public class AgentClient {
 		
 		
 		//when connected, create udp server
-		UDPServer serverUdp = new UDPServer(port, client.listOfPseudo);
+		UDPServer serverUdp = new UDPServer(port, client.getAllPseudos());
 		Thread server = serverUdp.setServer();
 		server.start();
 		
