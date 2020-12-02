@@ -32,59 +32,87 @@ public class UDPClient {
 		return this.allPseudos ;
 	}
 	
-		 
-	public Runnable send_pseudo(String address, int port){
+	public void send(DatagramSocket server, String msg, InetAddress address, int port) {
+		byte[] buffer = (new String(msg).getBytes());
+		DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, port);
+		try {
+			server.send(packet);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public DatagramPacket receive(DatagramSocket server) {
+		byte[] buffer = new byte[1024];
+		DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+		try {
+			server.receive(packet);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return packet ;
+		
+	}
+	
+	
+	public Runnable send_pseudo(String address, int remotePort, int port){
             String packetPseudoToClient = pseudo.trim();
-            byte[] bufEnvoie = packetPseudoToClient.getBytes();
             
             try {
-	               System.out.println(packetPseudoToClient + " envoie : " + packetPseudoToClient + " to : " + address + " " + port);
+	              // System.out.println(packetPseudoToClient + " envoie : " + packetPseudoToClient + " to : " + address + " " + port);
 
 	               DatagramSocket client = new DatagramSocket();
 	               
 	               InetAddress adresse = InetAddress.getByName(address);
+	
+	               send(client,packetPseudoToClient,adresse, remotePort);
 	               
-	               DatagramPacket packet = new DatagramPacket(bufEnvoie, bufEnvoie.length, adresse, port);
+	
+	               DatagramPacket packet2 = receive(client);
 	               
-	               packet.setData(bufEnvoie);
+	               System.out.println(port);
+	               System.out.println(Integer.toString(port));
+	               send(client,Integer.toString(port), adresse,remotePort);
 	               
-	               client.send(packet);
+	               packet2 = receive(client);
 	               
-	               byte[] bufRecept = new byte[1024];
-	               DatagramPacket packet2 = new DatagramPacket(bufRecept, bufRecept.length, adresse, port);
-	               client.receive(packet2);
+	               
 	               String paquetCourant = new String(packet2.getData()).trim();
 	               
+	               
+	               
 	               if (paquetCourant.equals("Refused")) {
-	            	   System.out.println("Choisir un nouveau pseudo");
+	            	  // System.out.println("Choisir un nouveau pseudo");
 	            	   isConnected = false ;
 	               }
 	               else {
 		               while (!paquetCourant.equals("Finished"))
 		               {
-		            	   System.out.println(packetPseudoToClient + " a recu une reponse du serveur, nom : " + paquetCourant);
+		            	  // System.out.println(packetPseudoToClient + " a recu une reponse du serveur, nom : " + paquetCourant);
 		            	   
 		            	   //On a recu un nom, on demande le port associe
-		            	   packet.setData(new String("Port now").getBytes());
-		            	   client.send(packet);
+		            	  
+		            	   send(client,"Port now",adresse, remotePort);
 	            	   
 		            	   //On le recoit
-		            	   byte[] BufForPort = new byte[1024];
-		            	   packet2.setData(BufForPort);
-			               client.receive(packet2);
-			               String remotePort = new String(packet2.getData()).trim();
+		            	  
+		            	   packet2 = receive(client);
+		            	   
+			               String otherPort = new String(packet2.getData()).trim();
 			               
 			               //Adding Pseudo and port to the HashMap
-		            	   allPseudos.put(paquetCourant, remotePort);
+		            	   allPseudos.put(paquetCourant, otherPort);
 		            	   
 		            	   //Ask for the next pseudo
-		            	   packet.setData(bufEnvoie);
-		            	   client.send(packet);
+		            	
+		            	   send(client, packetPseudoToClient, adresse, remotePort);
 		            	   
 		            	   //Reception of next pseudo
-			               byte[] newBufRecept = new byte[1024];
-		            	   packet2.setData(newBufRecept);
-			               client.receive(packet2);
+		            	   
+		            	   packet2 = receive(client);
 			               paquetCourant = new String(packet2.getData()).trim();
 		            	   
 		               }
@@ -96,9 +124,8 @@ public class UDPClient {
                e.printStackTrace();
             } catch (UnknownHostException e) {
                e.printStackTrace();
-            } catch (IOException e) {
-               e.printStackTrace();
             }
+   
 			return null;
          }
 
@@ -111,17 +138,19 @@ public class UDPClient {
 
 class ClientRunnable implements Runnable {
 	String address;
+	int remotePort ;
 	int port ;
 	UDPClient client ;
 	
-   public ClientRunnable(String address, int port, UDPClient client) {
+   public ClientRunnable(String address, int remotePort, UDPClient client, int port) {
 	   this.address = address ;
 	   this.port = port;
+	   this.remotePort = remotePort;
 	   this.client = client;
    }
 
    public void run() {
-	   client.send_pseudo(address, port);
+	   client.send_pseudo(address, remotePort, port);
    }
 }
 

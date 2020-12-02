@@ -62,7 +62,6 @@ public class AgentClient {
     
     public String askForInput(Scanner scan) {
 		String pseudo = scan.next();
-		this.setPseudo(pseudo);
 		return pseudo ;
     }
     
@@ -71,7 +70,7 @@ public class AgentClient {
     	ExecutorService es = Executors.newCachedThreadPool();
     	
     	for (int i = 1; i<3;i++) {
-			es.execute(new ClientRunnable(address, port-i,clientUdp));
+			es.execute(new ClientRunnable(address, port-i,clientUdp, port));
 		}
 		try {
 			boolean finished = es.awaitTermination(3, TimeUnit.SECONDS);
@@ -88,7 +87,7 @@ public class AgentClient {
     	
     	for (Map.Entry<String, String> user : list.entrySet()) {
     		System.out.print(user.getKey() + " ");
-    		System.out.print(user.getValue() + "  ");
+    		//System.out.print(user.getValue() + "  ");
     	}
     	System.out.println(" ");
     }
@@ -125,7 +124,7 @@ public class AgentClient {
 		boolean connected = false ;
 		while (!connected) {
 			System.out.println("Choisir un nom :");
-			client.askForInput(new Scanner(System.in));
+			client.setPseudo(client.askForInput(new Scanner(System.in)));
 			System.out.println("Pseudo choisit :" + client.getPseudo() + " , envoie aux autres users en cours ...");
 			UDPClient clientUdp = new UDPClient(client.getPseudo(), client.getAllPseudos());
 			connected = client.sendBroadCastWithName(clientUdp);
@@ -152,19 +151,28 @@ public class AgentClient {
 		Thread server = serverUdp.setServer();
 		server.start();
 		
+		
+		
+		
+		
 		//And create a tcp server
+		TCPServer serverTcp = new TCPServer(client.port);
+		Thread servTcp = new Thread(serverTcp);
+		servTcp.start();
 		
 		
 		
 		//Ask the user to choose a name
+		System.out.println("Entrez un pseudo pour discuter avec lui");
+		String pseudoToContact = client.askForInput(new Scanner(System.in));
 		
-
-		
-		
-		
-		
-		
-		
+		if (client.listOfPseudo.containsKey(pseudoToContact)) {
+			int portToContact = Integer.parseInt(client.listOfPseudo.get(pseudoToContact));
+			System.out.println(portToContact);
+			TCPClient clientTcp = new TCPClient(portToContact, "127.0.0.1");
+			Thread clTcp = new Thread(clientTcp);
+			clTcp.start();
+		}
 		
 		
 		//Recoit la rep, soit il est connecte, soit il faut choisir un autre pseudo, s'il est connecte il recoit egalement la liste des pseudos de tous les users

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -22,6 +23,32 @@ public class UDPServer {
 		this.allPseudos = allPseudos ;
 	}
 	
+	
+	public void send(DatagramSocket server, String msg, InetAddress address, int port) {
+		byte[] buffer = (new String(msg).getBytes());
+		DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, port);
+		try {
+			server.send(packet);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public DatagramPacket receive(DatagramSocket server) {
+		byte[] buffer = new byte[1024];
+		DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+		try {
+			server.receive(packet);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return packet ;
+		
+	}
+	
 
 	
 	public Thread setServer() {
@@ -38,73 +65,50 @@ public class UDPServer {
 	                if (allPseudos.size() < 2) {
 		            	allPseudos.put("Test", "1234");
 	                }
-	
-	            		
-	        		//creation du paquet
-	        		byte[] buffer = new byte[1024];
-	                DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-	        		
-	                //attente de reception
-	              	 System.out.println("En attente");
-	
-	                server.receive(packet);
+
+	                DatagramPacket packet  = receive(server);
 	                
 	                //Affiche le resultat
 	                String newPseudo = new String(packet.getData());
 	                newPseudo = newPseudo.trim();
-	                String newPort = Integer.toString(packet.getPort());
+	                
+	                send(server, "Send your port", packet.getAddress(), packet.getPort());
+	                packet = receive(server);
+	                System.out.println(packet.getPort());
+	                String newPort =String.valueOf(new String(packet.getData()).trim());
 
 	
-	                System.out.println("Recu de la part de " + packet.getAddress() 
-	                + " sur le port " + packet.getPort() + " :" + newPseudo);
+	                //System.out.println("Recu de la part de " + packet.getAddress() 
+	                //+ " sur le port " + packet.getPort() + " :" + newPseudo);
 	                
 	               	                
 	              
 	                if (allPseudos.containsKey(newPseudo)){
-	                	System.out.println("Connexion refusee, pseudo deja utilise");
-	                	byte[] buffer2 = (new String("Refused")).getBytes();
-		                DatagramPacket packet2 = new DatagramPacket(
-		                                     buffer2,             //Les donnees 
-		                                     buffer2.length,      //La taille des donnees
-		                                     packet.getAddress(), //L'adresse de l'emetteur
-		                                     packet.getPort()     //Le port de l'emetteur
-		                                     
-		                );
-		                
-		                //Et on envoie vers l'emetteur du datagramme recu precedemment
-		                server.send(packet2);
+	                	//System.out.println("Connexion refusee, pseudo deja utilise");
+	                	
+	                	send(server,"Refused",packet.getAddress(),packet.getPort());
 		                
 	                }else {
 	                //reponse
 	                for (Map.Entry<String, String> user : allPseudos.entrySet()) {
 	                	String pseudo = user.getKey();
-	                	System.out.println("Envoie de : " + pseudo);
-		                byte[] buffer2 = pseudo.getBytes();
-		                DatagramPacket packet2 = new DatagramPacket(
-		                                     buffer2,             //Les donnees 
-		                                     buffer2.length,      //La taille des donnees
-		                                     packet.getAddress(), //L'adresse de l'emetteur
-		                                     packet.getPort()     //Le port de l'emetteur
-		                                     
-		                );
-		                
-		                //Et on envoie vers l'emetteur du datagramme recu precedemment
-		                server.send(packet2);
-		                packet2.setLength(buffer2.length);
+	                	//System.out.println("Envoie de : " + pseudo);
+	                	
+	                	
+	                	send(server,pseudo,packet.getAddress(),packet.getPort());
+
 		                
 		                //On recoit la demande de port
-		                packet.setData(buffer);
-		                server.receive(packet);
+	                
+	                	packet = receive(server);
 		                String reponsePourPort = new String(packet.getData()).trim();
 		                
 		                if (reponsePourPort.equals("Port now")) {
-		                	   buffer2 = user.getValue().getBytes() ;
-		                	   packet2.setData(buffer2);
-		                	   server.send(packet2);
-		                	   
-		                	   byte[] bufNextUser = new byte[1024];
-		                	   packet.setData(bufNextUser);
-		                	   server.receive(packet);
+	                			
+		                	send(server,user.getValue(),packet.getAddress(),packet.getPort());
+
+		                	 
+		                	packet = receive(server);
    
 		                } else {
 		                	System.out.println("Mauvais comportement utilisateur, demande de port incorrecte");
@@ -112,17 +116,12 @@ public class UDPServer {
 	                }
 	                
 	                //On envoie Finished
-	                byte[] buffer2 = (new String("Finished")).getBytes();
-	                DatagramPacket packet2 = new DatagramPacket(
-	                                     buffer2,             //Les donnees 
-	                                     buffer2.length,      //La taille des donnees
-	                                     packet.getAddress(), //L'adresse de l'emetteur
-	                                     packet.getPort()     //Le port de l'emetteur
-	                                     
-	                );
-	                server.send(packet2);
+	               
+                	send(server,"Finished",packet.getAddress(),packet.getPort());
+
 	                
 	                //Ajout du nouveau client dans la liste
+	                System.out.println(newPort);
 	                allPseudos.put(newPseudo, newPort);
 	                }
 	                
@@ -133,12 +132,9 @@ public class UDPServer {
 	        	
 		        } catch (SocketException e) {
 		            e.printStackTrace();
-		        } catch (IOException e) {
-		            // TODO Auto-generated catch block
-		            e.printStackTrace();
-		        }
+		        } 
 	            
-	       	 System.out.println("Envoi termine");
+	       	 //System.out.println("Envoi termine");
         	 }
        	 
          }
