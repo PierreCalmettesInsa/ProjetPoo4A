@@ -2,8 +2,10 @@
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -15,7 +17,7 @@ public class AgentClient {
     private int userId;
 	protected String address ;
 	protected int port ;
-	protected ArrayList<String> listOfPseudo ;
+	protected HashMap<String, String> listOfPseudo ;
     private String pseudo;
     
 
@@ -23,13 +25,13 @@ public class AgentClient {
 	{
 		this.address = address ;
 		this.port = port ;
-		listOfPseudo = new ArrayList<String>() ;
+		listOfPseudo = new HashMap<String, String>() ;
 		pseudo = "";
 		
 	}
 	
 	
-	public ArrayList<String> getAllPseudos(){
+	public HashMap<String, String> getAllPseudos(){
 		return this.listOfPseudo ;
 	}
 	
@@ -58,11 +60,9 @@ public class AgentClient {
         return this.address;
     }
     
-    public String askForInput() {
-		Scanner scan = new Scanner(System.in);
+    public String askForInput(Scanner scan) {
 		String pseudo = scan.next();
-		scan.close();
-		setPseudo(pseudo);
+		this.setPseudo(pseudo);
 		return pseudo ;
     }
     
@@ -74,7 +74,7 @@ public class AgentClient {
 			es.execute(new ClientRunnable(address, port-i,clientUdp));
 		}
 		try {
-			boolean finished = es.awaitTermination(4, TimeUnit.SECONDS);
+			boolean finished = es.awaitTermination(3, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -84,10 +84,11 @@ public class AgentClient {
     }
     
     
-    public static void displayList(ArrayList<String> list) {
+    public static void displayList(HashMap<String, String> list) {
     	
-    	for (String pseudo : list) {
-    		System.out.print(pseudo + " ");
+    	for (Map.Entry<String, String> user : list.entrySet()) {
+    		System.out.print(user.getKey() + " ");
+    		System.out.print(user.getValue() + "  ");
     	}
     	System.out.println(" ");
     }
@@ -124,7 +125,7 @@ public class AgentClient {
 		boolean connected = false ;
 		while (!connected) {
 			System.out.println("Choisir un nom :");
-			client.askForInput();
+			client.askForInput(new Scanner(System.in));
 			System.out.println("Pseudo choisit :" + client.getPseudo() + " , envoie aux autres users en cours ...");
 			UDPClient clientUdp = new UDPClient(client.getPseudo(), client.getAllPseudos());
 			connected = client.sendBroadCastWithName(clientUdp);
@@ -134,11 +135,11 @@ public class AgentClient {
 				client.listOfPseudo = clientUdp.getList();
 			}
 		}
-		Set<String> listWithoutDuplicate = new HashSet<String>(client.listOfPseudo);
-		ArrayList<String> listInter = new ArrayList<String>(listWithoutDuplicate);
-		client.listOfPseudo = listInter ;
+		//Set<String> listWithoutDuplicate = new HashSet<String>(client.listOfPseudo);
+		//ArrayList<String> listInter = new ArrayList<String>(listWithoutDuplicate);
+		//client.listOfPseudo = listInter ;
 		
-		client.listOfPseudo.add(client.getPseudo());
+		client.listOfPseudo.put(client.getPseudo(), Integer.toString(client.getPortNum()));
 
 		
 		System.out.println("Connected !");
@@ -151,8 +152,20 @@ public class AgentClient {
 		Thread server = serverUdp.setServer();
 		server.start();
 		
+		//And create a tcp server
+		
+		
+		
+		//Ask the user to choose a name
 		
 
+		
+		
+		
+		
+		
+		
+		
 		
 		//Recoit la rep, soit il est connecte, soit il faut choisir un autre pseudo, s'il est connecte il recoit egalement la liste des pseudos de tous les users
 		

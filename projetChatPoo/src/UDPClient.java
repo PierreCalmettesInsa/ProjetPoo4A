@@ -9,31 +9,32 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class UDPClient {
 	
 	protected String pseudo ;
 
-	protected ArrayList<String> allPseudos ;
+	protected HashMap<String, String> allPseudos ;
 	protected boolean isConnected ;
 	
 	
 	
-	public UDPClient(String pseudo, ArrayList<String> allPseudos)
+	public UDPClient(String pseudo, HashMap<String, String> allPseudos)
 	{
 		this.pseudo = pseudo;
 		this.allPseudos = allPseudos;
 		isConnected = true ;
 	}
 	
-	public ArrayList<String> getList(){
+	public HashMap<String, String> getList(){
 		return this.allPseudos ;
 	}
 	
 		 
 	public Runnable send_pseudo(String address, int port){
-            String packetPseudoToClient = pseudo;
+            String packetPseudoToClient = pseudo.trim();
             byte[] bufEnvoie = packetPseudoToClient.getBytes();
             
             try {
@@ -49,11 +50,10 @@ public class UDPClient {
 	               
 	               client.send(packet);
 	               
-	               byte[] bufRecept = new byte[8196];
+	               byte[] bufRecept = new byte[1024];
 	               DatagramPacket packet2 = new DatagramPacket(bufRecept, bufRecept.length, adresse, port);
 	               client.receive(packet2);
-	               String paquetCourant = new String(packet2.getData());
-	               System.out.println(paquetCourant);
+	               String paquetCourant = new String(packet2.getData()).trim();
 	               
 	               if (paquetCourant.equals("Refused")) {
 	            	   System.out.println("Choisir un nouveau pseudo");
@@ -62,14 +62,30 @@ public class UDPClient {
 	               else {
 		               while (!paquetCourant.equals("Finished"))
 		               {
-		            	   System.out.println(packetPseudoToClient + " a recu une reponse du serveur : " + paquetCourant);
-		            	   allPseudos.add(new String(packet2.getData()));
+		            	   System.out.println(packetPseudoToClient + " a recu une reponse du serveur, nom : " + paquetCourant);
+		            	   
+		            	   //On a recu un nom, on demande le port associe
+		            	   packet.setData(new String("Port now").getBytes());
+		            	   client.send(packet);
+	            	   
+		            	   //On le recoit
+		            	   byte[] BufForPort = new byte[1024];
+		            	   packet2.setData(BufForPort);
+			               client.receive(packet2);
+			               String remotePort = new String(packet2.getData()).trim();
+			               
+			               //Adding Pseudo and port to the HashMap
+		            	   allPseudos.put(paquetCourant, remotePort);
+		            	   
+		            	   //Ask for the next pseudo
 		            	   packet.setData(bufEnvoie);
 		            	   client.send(packet);
-			               byte[] newBufRecept = new byte[8196];
+		            	   
+		            	   //Reception of next pseudo
+			               byte[] newBufRecept = new byte[1024];
 		            	   packet2.setData(newBufRecept);
 			               client.receive(packet2);
-			               paquetCourant = new String(packet2.getData());
+			               paquetCourant = new String(packet2.getData()).trim();
 		            	   
 		               }
 	               }

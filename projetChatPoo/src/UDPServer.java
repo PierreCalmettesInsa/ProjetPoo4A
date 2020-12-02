@@ -7,14 +7,16 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class UDPServer {
 	
 	protected int port ;
-	public ArrayList<String> allPseudos ;
+	public HashMap<String, String> allPseudos ;
 
 	
-	public UDPServer(int port,  ArrayList<String> allPseudos)
+	public UDPServer(int port,  HashMap<String, String> allPseudos)
 	{
 		this.port = port;
 		this.allPseudos = allPseudos ;
@@ -34,12 +36,12 @@ public class UDPServer {
 	                
 	                //Seulement pour les tests
 	                if (allPseudos.size() < 2) {
-		            	allPseudos.add("Test");
+		            	allPseudos.put("Test", "1234");
 	                }
 	
 	            		
 	        		//creation du paquet
-	        		byte[] buffer = new byte[8192];
+	        		byte[] buffer = new byte[1024];
 	                DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 	        		
 	                //attente de reception
@@ -48,18 +50,17 @@ public class UDPServer {
 	                server.receive(packet);
 	                
 	                //Affiche le resultat
-	                String newPseudo = new String(packet.getData(), StandardCharsets.UTF_8);
-
+	                String newPseudo = new String(packet.getData());
+	                newPseudo = newPseudo.trim();
+	                String newPort = Integer.toString(packet.getPort());
 
 	
 	                System.out.println("Recu de la part de " + packet.getAddress() 
-	                + " sur le port " + packet.getPort() + " :" + newPseudo + ".");
+	                + " sur le port " + packet.getPort() + " :" + newPseudo);
 	                
-	                
-	                System.out.println(allPseudos.contains(newPseudo));
-	                
+	               	                
 	              
-	                if (allPseudos.contains(newPseudo)){
+	                if (allPseudos.containsKey(newPseudo)){
 	                	System.out.println("Connexion refusee, pseudo deja utilise");
 	                	byte[] buffer2 = (new String("Refused")).getBytes();
 		                DatagramPacket packet2 = new DatagramPacket(
@@ -75,7 +76,8 @@ public class UDPServer {
 		                
 	                }else {
 	                //reponse
-	                for (String pseudo : allPseudos) {
+	                for (Map.Entry<String, String> user : allPseudos.entrySet()) {
+	                	String pseudo = user.getKey();
 	                	System.out.println("Envoie de : " + pseudo);
 		                byte[] buffer2 = pseudo.getBytes();
 		                DatagramPacket packet2 = new DatagramPacket(
@@ -89,8 +91,24 @@ public class UDPServer {
 		                //Et on envoie vers l'emetteur du datagramme recu precedemment
 		                server.send(packet2);
 		                packet2.setLength(buffer2.length);
+		                
+		                //On recoit la demande de port
 		                packet.setData(buffer);
 		                server.receive(packet);
+		                String reponsePourPort = new String(packet.getData()).trim();
+		                
+		                if (reponsePourPort.equals("Port now")) {
+		                	   buffer2 = user.getValue().getBytes() ;
+		                	   packet2.setData(buffer2);
+		                	   server.send(packet2);
+		                	   
+		                	   byte[] bufNextUser = new byte[1024];
+		                	   packet.setData(bufNextUser);
+		                	   server.receive(packet);
+   
+		                } else {
+		                	System.out.println("Mauvais comportement utilisateur, demande de port incorrecte");
+		                }
 	                }
 	                
 	                //On envoie Finished
@@ -105,7 +123,7 @@ public class UDPServer {
 	                server.send(packet2);
 	                
 	                //Ajout du nouveau client dans la liste
-	                allPseudos.add(newPseudo);
+	                allPseudos.put(newPseudo, newPort);
 	                }
 	                
 	   	       	 	server.close();
