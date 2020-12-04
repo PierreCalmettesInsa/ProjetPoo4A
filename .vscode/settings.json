@@ -1,0 +1,11 @@
+{
+    "java.project.resourceFilters": [
+
+        "node_modules",
+        ".git"
+    ],
+    "files.exclude": {
+        "**/**.class": true
+    },
+    "javascript.implicitProjectConfig.checkJs": true
+}
