@@ -8,26 +8,28 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 
 public class ChatWindow {
-	
-	//Specify the look and feel to use. Valid values:
-	//null (use the default), "Metal", "System", "Motif", "GTK+"
+
+	// Specify the look and feel to use. Valid values:
+	// null (use the default), "Metal", "System", "Motif", "GTK+"
 	final static String LOOKANDFEEL = "System";
 
+	// pour connection frame
+	private JFrame frameConnection;
+	private JButton buttonConnection;
+	private JTextField fieldPseudo;
 
-
-
-	private JFrame frameConnection ;
-	private JButton buttonConnection ;
-	private JTextField fieldPseudo ;
-
-	private JComboBox listPseudos ;
-	private JButton choosePseudo ;
+	private JComboBox<String> listPseudos;
+	private JButton choosePseudo;
 	private JPanel panelChoix;
 
-
-
+	// pour la chat frame
+	private ArrayList<String> messsages;
+	private JFrame chatConnection;
+	private JScrollPane chatScrollPane;
+	private JTextArea chatbox;
 
 	private static void initLookAndFeel() {
 
@@ -37,141 +39,174 @@ public class ChatWindow {
 
 		if (LOOKANDFEEL != null) {
 			if (LOOKANDFEEL.equals("Metal")) {
-				lookAndFeel =
-						UIManager.getCrossPlatformLookAndFeelClassName();
+				lookAndFeel = UIManager.getCrossPlatformLookAndFeelClassName();
 			} else if (LOOKANDFEEL.equals("System")) {
 				lookAndFeel = UIManager.getSystemLookAndFeelClassName();
 			} else if (LOOKANDFEEL.equals("Motif")) {
-				lookAndFeel =
-						"com.sun.java.swing.plaf.motif.MotifLookAndFeel";
-			} else if (LOOKANDFEEL.equals("GTK+")) { //new in 1.4.2
+				lookAndFeel = "com.sun.java.swing.plaf.motif.MotifLookAndFeel";
+			} else if (LOOKANDFEEL.equals("GTK+")) { // new in 1.4.2
 				lookAndFeel = "com.sun.java.swing.plaf.gtk.GTKLookAndFeel";
 
 			} else {
-				System.err.println("Unexpected value of LOOKANDFEEL specified: "
-						+ LOOKANDFEEL);
-				lookAndFeel =
-						UIManager.getCrossPlatformLookAndFeelClassName();
+				System.err.println("Unexpected value of LOOKANDFEEL specified: " + LOOKANDFEEL);
+				lookAndFeel = UIManager.getCrossPlatformLookAndFeelClassName();
 			}
 
 			try {
 				UIManager.setLookAndFeel(lookAndFeel);
 			} catch (ClassNotFoundException e) {
-				System.err.println("Couldnt find class for specified look and feel:"
-						+ lookAndFeel);
+				System.err.println("Couldnt find class for specified look and feel:" + lookAndFeel);
 				System.err.println("Did you include the L&F library in the class path?");
 				System.err.println("Using the default look and feel.");
 			} catch (UnsupportedLookAndFeelException e) {
-				System.err.println("Can't use the specified look and feel ("
-						+ lookAndFeel
-						+ ") on this platform.");
+				System.err.println("Can't use the specified look and feel (" + lookAndFeel + ") on this platform.");
 				System.err.println("Using the default look and feel.");
 			} catch (Exception e) {
-				System.err.println("Couldn't get specified look and feel ("
-						+ lookAndFeel
-						+ "), for some reason.");
+				System.err.println("Couldn't get specified look and feel (" + lookAndFeel + "), for some reason.");
 				System.err.println("Using the default look and feel.");
 				e.printStackTrace();
 			}
 		}
 	}
 
-
 	public void connectionFrame() {
 
-		//Set the look and feel.
+		// Set the look and feel.
 		initLookAndFeel();
 
-		//Make sure we have nice window decorations.
+		// Make sure we have nice window decorations.
 		JFrame.setDefaultLookAndFeelDecorated(true);
 
-		//Create and set up the window.
+		// Create and set up the window.
 		frameConnection = new JFrame("connectionWindow");
 		frameConnection.getContentPane().setLayout(new BorderLayout());
 		frameConnection.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frameConnection.setLocationRelativeTo(null);
-
-
-
 
 		fieldPseudo = new JTextField();
 
 		buttonConnection = new JButton("Se connecter");
 		buttonConnection.setMnemonic(KeyEvent.VK_I);
 
-
 		/*
-		 * An easy way to put space between a top-level container
-		 * and its contents is to put the contents in a JPanel
-		 * that has an "empty" border.
+		 * An easy way to put space between a top-level container and its contents is to
+		 * put the contents in a JPanel that has an "empty" border.
 		 */
 		JPanel pane = new JPanel(new GridLayout(0, 1));
 		pane.add(fieldPseudo);
 		pane.add(buttonConnection);
-		pane.setBorder(BorderFactory.createEmptyBorder(
-				30, //top
-				30, //left
-				10, //bottom
-				30) //right
-				);
+		pane.setBorder(BorderFactory.createEmptyBorder(50, // top
+				50, // left
+				20, // bottom
+				50) // right
+		);
 
 		frameConnection.getContentPane().add(pane, BorderLayout.CENTER);
 
-
-		
-		listPseudos = new JComboBox<String>() ;
+		listPseudos = new JComboBox<String>();
 
 		choosePseudo = new JButton("Discuter avec");
 		choosePseudo.setMnemonic(KeyEvent.VK_I);
 
-
 		panelChoix = new JPanel(new GridLayout(0, 1));
 		panelChoix.add(listPseudos);
-		panelChoix.setBorder(BorderFactory.createEmptyBorder(
-				30, //top
-				30, //left
-				10, //bottom
-				30) //right
-				);
+		panelChoix.add(choosePseudo);
+		panelChoix.setBorder(BorderFactory.createEmptyBorder(50, // top
+				50, // left
+				20, // bottom
+				50) // right
+		);
 
+		frameConnection.getContentPane().add(panelChoix, BorderLayout.SOUTH);
 
 		frameConnection.pack();
 		frameConnection.setVisible(true);
 	}
 
-	public void ChatFrame(){
-		//Create and set up the window.
-		frameConnection = new JFrame("chatWindow");
-		frameConnection.getContentPane().setLayout(new BorderLayout());
-		frameConnection.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frameConnection.setLocationRelativeTo(null);
 
-		label= new JLabel();
+
+	public void updateConnectionFrame(ArrayList<String> allPseudos){
+		
+		javax.swing.SwingUtilities.invokeLater(new Runnable() {
+			public void run(){
+				frameConnection.setVisible(false);
+				for (String pseudo : allPseudos){
+					listPseudos.addItem(pseudo);
+		
+				}
+				frameConnection.setVisible(true);
+			}
+		});
+
+
+	}
+
+	public void ChatFrame() {
+		// Create and set up the window.
+		chatConnection = new JFrame("chatWindow");
+		chatConnection.getContentPane().setLayout(new BorderLayout());
+		chatConnection.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		chatConnection.setLocationRelativeTo(null);
+
+		//ecrire et envoyer un message
+		JPanel southPanel=new JPanel();
+		JButton sendMessage=new JButton("Envoyez le message");
+		JTextField messageBox=new JTextField(30);
+		southPanel.add(messageBox);
+		southPanel.add(sendMessage);
+
+		//pour display le texte
+		
+		chatbox=new JTextArea();
+		chatbox.append("Pierre : coucou\n Thomas : Yo\n");
+		chatbox.setLineWrap(true);
+		chatbox.setEditable(false);
+		chatScrollPane = new JScrollPane(chatbox);
+		chatScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+
+		//layout
+		chatConnection.add(chatScrollPane,BorderLayout.CENTER);
+		chatConnection.add(southPanel,BorderLayout.SOUTH);
+		chatConnection.setSize(100,100);
+		chatConnection.setVisible(true);
+		
+		
+
+		
+
+	}
+	
+	public void launchWindowChat(){
+		//javax.swing.SwingUtilities.invokeLater(new Runnable() {
+		//	public void run() {
+			this.ChatFrame();
+		//	}
+		//});
+
 	}
 
 
 
 
+	
+	public void launchWindowConnection() {
+		// Schedule a job for the event-dispatching thread:
+		// creating and showing this applications GUI.
 
-
-
-
-
-
-
-
-	public void launchWindowConnection()  {
-		//Schedule a job for the event-dispatching thread:
-		//creating and showing this applications GUI.
 		try {
 			javax.swing.SwingUtilities.invokeAndWait(new Runnable() {
 				public void run() {
-				connectionFrame();
+					connectionFrame();
 				}
 			});
-		} catch (InterruptedException e){
-		} catch (InvocationTargetException e){
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+
 
 	}
 
@@ -187,7 +222,7 @@ public class ChatWindow {
 
 
 
-	public JComboBox getListPseudos() {
+	public JComboBox<String> getListPseudos() {
 		return this.listPseudos;
 	}
 
@@ -196,7 +231,7 @@ public class ChatWindow {
 	}
 
 	
-	public void setListPseudos(JComboBox listPseudos){
+	public void setListPseudos(JComboBox<String> listPseudos){
 		this.listPseudos = listPseudos ;
 	}
 

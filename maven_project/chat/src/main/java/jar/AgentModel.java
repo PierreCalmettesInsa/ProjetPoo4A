@@ -121,9 +121,9 @@ public class AgentModel {
     }
     
     
-    public void connectToUser() {
-		System.out.println("Entrez un pseudo pour discuter avec lui");
-		String pseudoToContact = this.askForInput();
+    public void connectToUser(String pseudoToContact) {
+		//System.out.println("Entrez un pseudo pour discuter avec lui");
+		//String pseudoToContact = this.askForInput();
 		
 		if (this.listOfPseudo.containsKey(pseudoToContact)) {
 			int portToContact = Integer.parseInt(this.listOfPseudo.get(pseudoToContact));
