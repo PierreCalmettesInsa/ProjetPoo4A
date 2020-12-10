@@ -121,7 +121,7 @@ public class AgentModel {
     }
     
     
-    public void connectToUser(String pseudoToContact) {
+    public void connectToUser(String pseudoToContact, ChatWindow chat) {
 		//System.out.println("Entrez un pseudo pour discuter avec lui");
 		//String pseudoToContact = this.askForInput();
 		
@@ -138,7 +138,7 @@ public class AgentModel {
 				e.printStackTrace();
 			}
 			
-			TCPClient clientTcp = new TCPClient(portToContact, "127.0.0.1", clientSocket, this.getPseudo(), pseudoToContact);
+			TCPClient clientTcp = new TCPClient(portToContact, "127.0.0.1", clientSocket, this.getPseudo(), pseudoToContact, chat);
 			Thread clTcp = new Thread(clientTcp);
 			clTcp.start();
 		}

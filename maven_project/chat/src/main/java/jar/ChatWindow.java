@@ -30,6 +30,8 @@ public class ChatWindow {
 	private JFrame chatConnection;
 	private JScrollPane chatScrollPane;
 	private JTextArea chatbox;
+	private JButton sendMessage ;
+	private JTextField messageBox ;
 
 	private static void initLookAndFeel() {
 
@@ -150,15 +152,15 @@ public class ChatWindow {
 
 		//ecrire et envoyer un message
 		JPanel southPanel=new JPanel();
-		JButton sendMessage=new JButton("Envoyez le message");
-		JTextField messageBox=new JTextField(30);
+		sendMessage=new JButton("Envoyez le message");
+		messageBox=new JTextField(30);
 		southPanel.add(messageBox);
 		southPanel.add(sendMessage);
 
 		//pour display le texte
 		
 		chatbox=new JTextArea();
-		chatbox.append("Pierre : coucou\n Thomas : Yo\n");
+		//chatbox.append("Pierre : coucou\n Thomas : Yo\n");
 		chatbox.setLineWrap(true);
 		chatbox.setEditable(false);
 		chatScrollPane = new JScrollPane(chatbox);
@@ -187,8 +189,6 @@ public class ChatWindow {
 
 
 
-
-	
 	public void launchWindowConnection() {
 		// Schedule a job for the event-dispatching thread:
 		// creating and showing this applications GUI.
@@ -219,7 +219,17 @@ public class ChatWindow {
 		return this.panelChoix;
 	}
 
+	public JButton getButtonSend(){
+		return this.sendMessage ;
+	}
 
+	public JTextField getMessageField(){
+		return this.messageBox ;
+	}
+
+	public JTextArea getMessageArea(){
+		return this.chatbox;
+	}
 
 
 	public JComboBox<String> getListPseudos() {

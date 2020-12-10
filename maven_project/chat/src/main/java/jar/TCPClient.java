@@ -15,45 +15,71 @@ public class TCPClient implements Runnable {
 	private Socket s;
 	private String myPseudo ;
 	private String oPseudo ;
+	protected ChatWindow chat ;
+	protected PrintWriter out ;
+	protected BufferedReader in ;
+
 	
-	public TCPClient(int port, String address, Socket s, String myPseudo, String oPseudo) {
+	public TCPClient(int port, String address, Socket s, String myPseudo, String oPseudo, ChatWindow chat) {
 		this.port = port ;
 		this.address = address;
 		this.s = s;
 		this.myPseudo = myPseudo ;
 		this.oPseudo = oPseudo;
+		this.chat = chat ;
+
+		try {
+			out = new PrintWriter(s.getOutputStream());
+			in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		//creat a new frame for the chat
+		chat.launchWindowChat();
+
+		//Add a listener to the button to send a message
+		initListener() ;
+	}
+
+	public void initListener(){
+		chat.getButtonSend().addActionListener(e -> send());
+	}
+
+	public void send(){
+		String msgToSend = chat.getMessageField().getText();
+		chat.getMessageArea().append(myPseudo + " : " + msgToSend + "\n");
+		out.println(msgToSend);
+		out.flush();
 	}
 	
 	public void run() {
 		try {
-            PrintWriter out = new PrintWriter(s.getOutputStream());
-            BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
-            
-            
-            Thread send = new Thread(new Runnable() {
-            	String toSend;
-            	
-            	public void run() {
-            		while(true) {
-            			System.out.print(myPseudo + ": ");
-            			toSend = scan.nextLine();
-            			out.println(toSend);
-            			out.flush();
-            		}
-            	}
-            });
-            send.start();
+
+			String firstReceived;
+			try {
+				firstReceived = in.readLine();
+				chat.getMessageArea().append("Vous êtes en discussion avec : " + firstReceived + "\n");
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+			out.println("Mettre pseudo");
+			out.flush();
+	
+	
+
             
             Thread receive = new Thread(new Runnable () {
-            	String received ;
+            	String received = "";
             	
             	public void run() {
-            		try {
-            			received = in.readLine();
-            			
+            		try {            			
             			while(received != null) {
-            				System.out.println(oPseudo + ": " + received);
-            				received = in.readLine();
+							received = in.readLine();
+							chat.getMessageArea().append(oPseudo + " : " + received + "\n");
             			}
             			
             			//Server disconnected

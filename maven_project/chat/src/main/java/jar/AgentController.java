@@ -53,17 +53,9 @@ public class AgentController {
 		server.start();
 
 		//And create a tcp server
-		TCPServer serverTcp = new TCPServer(agentClient.getPortNum());
+		TCPServer serverTcp = new TCPServer(agentClient.getPortNum(), chatWindow);
 		Thread servTcp = new Thread(serverTcp);
         servTcp.start();
-        
-
-
-		/*
-		//Ask the user to choose a name and connect to it
-        agentClient.connectToUser();
-        */
-
 
     }
 
@@ -75,9 +67,7 @@ public class AgentController {
         if (autrePseudo.equals(agentClient.getPseudo()) || autrePseudo.equals("")){
             System.out.println("Erreur, choisir une autre personne");
         } else {
-            agentClient.connectToUser(autrePseudo);
-
-            chatWindow.launchWindowChat();
+            agentClient.connectToUser(autrePseudo, chatWindow);
         }
 
     }

@@ -14,9 +14,11 @@ import java.util.concurrent.Executors;
 public class TCPServer implements Runnable{
 	
 	protected int port ;
+	protected ChatWindow chat ;
 	
-	public TCPServer(int port){
+	public TCPServer(int port, ChatWindow chat){
 		this.port = port ;
+		this.chat = chat ;
 	}
 	
 	@Override
@@ -26,7 +28,7 @@ public class TCPServer implements Runnable{
 			
 			while(true) {
 				Socket link = socket.accept();
-				new Thread(new AcceptedConnection(link)).start();
+				new Thread(new AcceptedConnection(link, chat)).start();
 			}
 			
         } catch (Exception e) {
@@ -41,50 +43,68 @@ class AcceptedConnection implements Runnable {
 	final Socket link;
 	protected BufferedReader in ;
 	protected PrintWriter out ;
+	protected ChatWindow chat ;
 	final Scanner scan = new Scanner(System.in);
 	
-	public AcceptedConnection(Socket link){
+	public AcceptedConnection(Socket link, ChatWindow chat){
 		this.link=link;
+		this.chat = chat ;
 		
 		try {
+			//create inputs and outputs
 			this.in = new BufferedReader(new InputStreamReader(link.getInputStream()));
 			this.out = new PrintWriter(link.getOutputStream());
+
+			//creat a new frame for the chat
+			chat.launchWindowChat();
+
+			//Add a listener to the button to send a message
+			initListener() ;
+
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+
+	public void initListener(){
+		chat.getButtonSend().addActionListener(e -> send());
+	}
+
+	public void send(){
+		String msgToSend = chat.getMessageField().getText();
+		chat.getMessageArea().append("AddPseudoInTcpServer : " + msgToSend + "\n");
+		out.println(msgToSend);
+		out.flush();
+	}
 	
 	@Override
 	public void run() {
 		
-		System.out.println("Ouverture d'un chat avec un autre utilisateur");
-			//Creation of two thread, one to send and one to receive
-			
-			Thread send = new Thread(new Runnable() {
-				String toSend ;
-				
-				public void run() {
-					while(true) {
-						System.out.print("Client :");
-						toSend = scan.nextLine();
-						out.println(toSend);
-						out.flush();
-					}
-				}
-			});
-			send.start();
+		out.println("Mettre pseudo");
+		out.flush();
+
+		String firstReceived;
+		try {
+			firstReceived = in.readLine();
+			chat.getMessageArea().append("Vous êtes en discussion avec : " + firstReceived + "\n");
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+
 			
 			Thread receive = new Thread(new Runnable() {
-				String received ;
+				String received = "" ;
 				
 				public void run() {
 					try {
-						received = in.readLine();
 						
 						while (received != null) {
-							System.out.println("Client: " + received);
 							received = in.readLine();
+							chat.getMessageArea().append("ClientAddPseudoInTcpServer : " + received + "\n");
 						}
 						
 						//Client disconnected
