@@ -9,7 +9,11 @@ Nos différentes classes se trouvent dans maven_project\chat\src\main.
 Interface utilisateur :
   fenêtre de connexion : ok
   Choix de l'utilsateur avec qui discuter : ok
-  fenêtre de chat : ok mais pas encore utilisée par le controller (pas d'ajout de message)
+  fenêtre de chat : ok 
+  
+ Pour lancer : dans un terminal lancer jar.App 25555 127.0.0.1
+ Dans un autre terminal : lancer jar.App 25556 127.0.0.1
+ ..... rajouter +1 au port à chaque nouvel agent.
   
   
 Historique : connexion au mysql du gei à travers un vpn ne fontionne toujours pas.
