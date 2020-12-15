@@ -25,20 +25,35 @@
       <version>4.11</version>
       <scope>test</scope>
     </dependency>
-  </dependencies>
+	<!-- https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc -->
+	<dependency>
+		<groupId>org.xerial</groupId>
+		<artifactId>sqlite-jdbc</artifactId>
+		<version>3.34.0</version>
+	</dependency>
 
-   <dependency>
-        <groupId>com.oracle</groupId>
-        <artifactId>ojdbc</artifactId>
-        <version>7</version>
-        <scope>system</scope>
-        <systemPath>D:\\Pierre-rog\\Desktop\\maven_project\\chat\\ojdbc7.jar</systemPath>
-    </dependency>
+  </dependencies>
+  
 
 
   <build>
     <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
       <plugins>
+		<plugin>
+			<groupId>org.codehaus.mojo</groupId>
+			<artifactId>exec-maven-plugin</artifactId>
+			<version>1.6.0</version>
+			<executions>
+				<execution>
+					<goals>
+						<goal>java</goal>
+					</goals>
+				</execution>
+			</executions>
+			<configuration>
+				<mainClass>jar.App</mainClass>
+			</configuration>
+		</plugin>
         <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
         <plugin>
           <artifactId>maven-clean-plugin</artifactId>

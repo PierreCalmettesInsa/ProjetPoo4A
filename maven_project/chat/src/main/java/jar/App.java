@@ -16,6 +16,7 @@ public class App
 		//Choisir un pseudo, dans l'invite de commande demande au user de taper un nom
 		
         AgentModel client = new AgentModel(0,address,port);
+        DatabaseChat.checkDbExistsAndCreate(port + ".db");
         ChatWindow v = new ChatWindow();
         v.launchWindowConnection();
         AgentController c = new AgentController(client,v);

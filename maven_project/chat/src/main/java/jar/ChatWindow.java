@@ -9,6 +9,10 @@ import java.awt.*;
 import java.awt.event.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+
 
 public class ChatWindow {
 
@@ -26,7 +30,7 @@ public class ChatWindow {
 	private JPanel panelChoix;
 
 	// pour la chat frame
-	private ArrayList<String> messsages;
+	private ArrayList<String> messages;
 	private JFrame chatConnection;
 	private JScrollPane chatScrollPane;
 	private JTextArea chatbox;
@@ -152,10 +156,22 @@ public class ChatWindow {
 
 		//ecrire et envoyer un message
 		JPanel southPanel=new JPanel();
-		sendMessage=new JButton("Envoyez le message");
+
+		//path to maven
+		String pathOfProject = System.getProperty("user.dir");
+		String path = pathOfProject + "\\" + "chat\\" + "iconSend.jpg" ;
+		Icon icon = new ImageIcon(path);
+		sendMessage=new JButton(icon);
+
 		messageBox=new JTextField(30);
 		southPanel.add(messageBox);
 		southPanel.add(sendMessage);
+
+		//Icon icon = new ImageIcon("path/to/iconSend.jpg");
+		//sendMessage.setIconImage(icon);
+		//(Toolkit.getDefaultToolkit().getImage(getClass().getResource("path/to/iconSend.jpg")));
+		//f.setIconImage(ImageIO.read("res/iconSend.jpg"));
+
 
 		//pour display le texte
 		
