@@ -16,4 +16,4 @@ Interface utilisateur :
  ..... rajouter +1 au port à chaque nouvel agent.
   
   
-Historique : connexion au mysql du gei à travers un vpn ne fontionne toujours pas.
+Historique : nous avons choisi d'utiliser sqlite.
