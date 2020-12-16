@@ -1,12 +1,8 @@
 package jar;
 
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.stream.Collectors;
-import java.awt.*;
-import java.awt.event.*;
 
-import javax.swing.*;
 
 
 
@@ -48,12 +44,12 @@ public class AgentController {
 
     	
 		//when connected, create udp server
-		UDPServer serverUdp = new UDPServer(agentClient.getPortNum(), agentClient.getAllPseudos());
+		UDPServer serverUdp = new UDPServer(agentClient.getPortNum(), agentClient.getAllPseudos(), this);
 		Thread server = serverUdp.setServer();
 		server.start();
 
 		//And create a tcp server
-		TCPServer serverTcp = new TCPServer(agentClient.getPortNum(), chatWindow);
+		TCPServer serverTcp = new TCPServer(agentClient.getPortNum(), chatWindow,agentClient.getAllPseudos());
 		Thread servTcp = new Thread(serverTcp);
         servTcp.start();
 
@@ -75,61 +71,9 @@ public class AgentController {
 
     public void displayConnectedUser(ArrayList<String> allPseudos){
 
-        /*
-        JComboBox<String> combo = chatWindow.getListPseudos();
-
-        for (String pseudo : allPseudos){
-            combo.addItem(pseudo);
-
-        }
-
-        chatWindow.setListPseudos(combo);
-        JFrame connectionFrame = chatWindow.getConnectionFrame();
-
-        SwingUtilities.updateComponentTreeUI(connectionFrame);
-        connectionFrame.invalidate();
-        connectionFrame.validate();
-        connectionFrame.repaint();
-        */
-
         chatWindow.updateConnectionFrame(allPseudos);
 
-        //JPanel panelChoix = chatWindow.getPanel() ;
-
-      //  JFrame frameToChange =  chatWindow.getConnectionFrame();
-
-       // frameToChange.getContentPane().add(panelChoix , BorderLayout.SOUTH);
-        
-       // frameToChange.pack();
-       // frameToChange.setVisible(true);
-        
-       // chatWindow.setConnectionFrame(frameToChange);
-
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

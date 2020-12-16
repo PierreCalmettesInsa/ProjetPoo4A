@@ -1,10 +1,11 @@
 package jar;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class TCPClient implements Runnable {
@@ -18,40 +19,59 @@ public class TCPClient implements Runnable {
 	protected ChatWindow chat ;
 	protected PrintWriter out ;
 	protected BufferedReader in ;
+	protected int myPort ;
+	protected MessageFrame msgFrame ;
 
 	
-	public TCPClient(int port, String address, Socket s, String myPseudo, String oPseudo, ChatWindow chat) {
+	public TCPClient(int myPort, int port, String address, Socket s, String myPseudo, String oPseudo, ChatWindow chat) {
 		this.port = port ;
 		this.address = address;
 		this.s = s;
 		this.myPseudo = myPseudo ;
 		this.oPseudo = oPseudo;
 		this.chat = chat ;
+		this.myPort = myPort ;
 
 		try {
 			out = new PrintWriter(s.getOutputStream());
 			in = new BufferedReader(new InputStreamReader(s.getInputStream()));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 		//creat a new frame for the chat
-		chat.launchWindowChat();
+		msgFrame = chat.launchWindowChat();
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		//Look for history, to be replace by ip address
+		ArrayList<String> allMessagesHisto = DatabaseChat.getHistory(myPort, port);
+
+		for (String msg : allMessagesHisto){
+			msgFrame.getMessageArea().append(msg + "\n");
+		}
+
+
+
 
 		//Add a listener to the button to send a message
 		initListener() ;
 	}
 
 	public void initListener(){
-		chat.getButtonSend().addActionListener(e -> send());
+		msgFrame.getButtonSend().addActionListener(e -> send());
 	}
 
 	public void send(){
-		String msgToSend = chat.getMessageField().getText();
-		chat.getMessageArea().append(myPseudo + " : " + msgToSend + "\n");
+		String msgToSend = msgFrame.getMessageField().getText();
+		msgFrame.getMessageArea().append(myPseudo + " : " + msgToSend + "\n");
 		out.println(msgToSend);
 		out.flush();
+
+		DatabaseChat.addToHistory(this.myPort, port,(myPseudo + " : " + msgToSend));
 	}
 	
 	public void run() {
@@ -60,13 +80,12 @@ public class TCPClient implements Runnable {
 			String firstReceived;
 			try {
 				firstReceived = in.readLine();
-				chat.getMessageArea().append("Vous êtes en discussion avec : " + firstReceived + "\n");
+				msgFrame.getMessageArea().append("Vous êtes en discussion avec : " + firstReceived + "\n");
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 
-			out.println("Mettre pseudo");
+			out.println(myPseudo);
 			out.flush();
 	
 	
@@ -79,11 +98,13 @@ public class TCPClient implements Runnable {
             		try {            			
             			while(received != null) {
 							received = in.readLine();
-							chat.getMessageArea().append(oPseudo + " : " + received + "\n");
+							msgFrame.getMessageArea().append(oPseudo + " : " + received + "\n");
+							DatabaseChat.addToHistory(myPort, port, (oPseudo + " : " + received) );
+
             			}
             			
-            			//Server disconnected
-            			System.out.println("Serveur deconnecte");
+						//Server disconnected
+						msgFrame.getMessageArea().append("L'utiisateur s'est deconnecte"  + "\n");
             			out.close();
             			s.close();
             		} catch (IOException e) {

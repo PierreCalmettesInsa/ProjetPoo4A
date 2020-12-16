@@ -1,18 +1,11 @@
 package jar;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -80,9 +73,8 @@ public class AgentModel {
 			es.execute(new ClientRunnable(address, port-i,clientUdp, port));
 		}
 		try {
-			boolean finished = es.awaitTermination(3, TimeUnit.SECONDS);
+			es.awaitTermination(3, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}	
 		return clientUdp.isConnected ;
@@ -131,14 +123,12 @@ public class AgentModel {
 			try {
 				clientSocket = new Socket("127.0.0.1",portToContact);
 			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
-			TCPClient clientTcp = new TCPClient(portToContact, "127.0.0.1", clientSocket, this.getPseudo(), pseudoToContact, chat);
+			TCPClient clientTcp = new TCPClient(this.getPortNum(),portToContact, "127.0.0.1", clientSocket, this.getPseudo(), pseudoToContact, chat);
 			Thread clTcp = new Thread(clientTcp);
 			clTcp.start();
 		}

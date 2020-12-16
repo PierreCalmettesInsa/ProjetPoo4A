@@ -1,27 +1,27 @@
 package jar;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class UDPServer {
 	
 	protected int port ;
 	public HashMap<String, String> allPseudos ;
+	protected AgentController agent ;
 
 	
-	public UDPServer(int port,  HashMap<String, String> allPseudos)
+	public UDPServer(int port,  HashMap<String, String> allPseudos, AgentController agent)
 	{
 		this.port = port;
 		this.allPseudos = allPseudos ;
+		this.agent = agent ;
 	}
 	
 	
@@ -31,7 +31,6 @@ public class UDPServer {
 		try {
 			server.send(packet);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -43,7 +42,6 @@ public class UDPServer {
 		try {
 			server.receive(packet);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return packet ;
@@ -62,10 +60,6 @@ public class UDPServer {
 	            	
 	                DatagramSocket server = new DatagramSocket(port);
 	                
-	                //Seulement pour les tests
-	                if (allPseudos.size() < 2) {
-		            	allPseudos.put("Test", "1234");
-	                }
 
 	                DatagramPacket packet  = receive(server);
 	                
@@ -121,7 +115,11 @@ public class UDPServer {
 
 	                
 	                //Ajout du nouveau client dans la liste
-	                allPseudos.put(newPseudo, newPort);
+					allPseudos.put(newPseudo, newPort);
+					ArrayList<String> listOfPSeudos = allPseudos.keySet().stream().collect(Collectors.toCollection(ArrayList::new)); 
+					agent.displayConnectedUser(listOfPSeudos);
+
+
 	                }
 	                
 	   	       	 	server.close();
