@@ -75,7 +75,11 @@ public class UDPServer {
 	                //System.out.println("Recu de la part de " + packet.getAddress() 
 	                //+ " sur le port " + packet.getPort() + " :" + newPseudo);
 	                
-	               	                
+	               	if (allPseudos.containsValue(newPort)){
+						//This port is already in the list
+						System.out.println("Removing from list");
+						allPseudos.values().remove(newPort);
+					}                
 	              
 	                if (allPseudos.containsKey(newPseudo)){
 	                	//System.out.println("Connexion refusee, pseudo deja utilise");

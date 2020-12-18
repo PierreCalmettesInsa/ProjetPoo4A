@@ -1,9 +1,6 @@
 package jar;
 
-/*
- * SwingApplication.java is a 1.4 example that requires
- * no other files.
- */
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -25,6 +22,7 @@ public class ChatWindow {
 	private JFrame frameConnection;
 	private JButton buttonConnection;
 	private JTextField fieldPseudo;
+	private JLabel enterPseudo ;
 
 	private JComboBox<String> listPseudos;
 	private JButton choosePseudo;
@@ -85,9 +83,10 @@ public class ChatWindow {
 		frameConnection.setLocationRelativeTo(null);
 
 		fieldPseudo = new JTextField();
+		enterPseudo = new JLabel("Entrez votre pseudo");
 
 		buttonConnection = new JButton("Se connecter");
-		buttonConnection.setMnemonic(KeyEvent.VK_I);
+		buttonConnection.setMnemonic(KeyEvent.VK_ENTER);
 
 		/*
 		 * An easy way to put space between a top-level container and its contents is to
@@ -95,11 +94,12 @@ public class ChatWindow {
 		 */
 		JPanel pane = new JPanel(new GridLayout(0, 1));
 		pane.add(fieldPseudo);
+		pane.add(enterPseudo);
 		pane.add(buttonConnection);
-		pane.setBorder(BorderFactory.createEmptyBorder(50, // top
-				50, // left
-				20, // bottom
-				50) // right
+		pane.setBorder(BorderFactory.createEmptyBorder(60, // top
+				60, // left
+				30, // bottom
+				60) // right
 		);
 
 		frameConnection.getContentPane().add(pane, BorderLayout.CENTER);
@@ -112,10 +112,10 @@ public class ChatWindow {
 		panelChoix = new JPanel(new GridLayout(0, 1));
 		panelChoix.add(listPseudos);
 		panelChoix.add(choosePseudo);
-		panelChoix.setBorder(BorderFactory.createEmptyBorder(50, // top
-				50, // left
-				20, // bottom
-				50) // right
+		panelChoix.setBorder(BorderFactory.createEmptyBorder(60, // top
+				60, // left
+				30, // bottom
+				60) // right
 		);
 
 		frameConnection.getContentPane().add(panelChoix, BorderLayout.SOUTH);
@@ -183,7 +183,9 @@ public class ChatWindow {
 		return this.panelChoix;
 	}
 
-
+	public JLabel getLabelPseudo() {
+		return this.enterPseudo;
+	}
 
 
 	public JComboBox<String> getListPseudos() {

@@ -73,7 +73,7 @@ public class AgentModel {
 			es.execute(new ClientRunnable(address, port-i,clientUdp, port));
 		}
 		try {
-			es.awaitTermination(3, TimeUnit.SECONDS);
+			es.awaitTermination(2, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}	
@@ -91,24 +91,22 @@ public class AgentModel {
     	System.out.println(" ");
     }
     
-    public void sendBroadCast(String pseudoChoisi) {
+    public boolean sendBroadCast(String pseudoChoisi) {
     	
 		boolean connected = false ;
-		while (!connected) {
-			System.out.println("Choisir un nom :");
-			this.setPseudo(pseudoChoisi);
-			System.out.println("Pseudo choisit :" + this.getPseudo() + " , envoie aux autres users en cours ...");
-			UDPClient clientUdp = new UDPClient(this.getPseudo(), this.getAllPseudos());
-			connected = this.sendBroadCastWithName(clientUdp);
-			if (!connected) {
-				System.out.println("Pseudo deja utilise");
-			}else {
-				this.listOfPseudo = clientUdp.getList();
-			}
+		System.out.println("Choisir un nom :");
+		this.setPseudo(pseudoChoisi);
+		System.out.println("Pseudo choisit :" + this.getPseudo() + " , envoie aux autres users en cours ...");
+		UDPClient clientUdp = new UDPClient(this.getPseudo(), this.getAllPseudos());
+		connected = this.sendBroadCastWithName(clientUdp);
+		if (connected) {
+			this.listOfPseudo = clientUdp.getList();
+			this.listOfPseudo.put(this.getPseudo(), Integer.toString(this.getPortNum()));
+		}else {
+			System.out.println("Pseudo deja utilise");
 		}
 		
-		this.listOfPseudo.put(this.getPseudo(), Integer.toString(this.getPortNum()));
-
+		return connected ;
 
     }
     

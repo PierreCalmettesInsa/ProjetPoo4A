@@ -11,6 +11,9 @@ public class AgentController {
 
     private AgentModel agentClient ;
     private ChatWindow chatWindow ;
+    private Thread server ; 
+    private Thread servTcp ;
+    private boolean alreadyConnected ;
 
 
     public AgentController(AgentModel agent, ChatWindow window){
@@ -20,6 +23,7 @@ public class AgentController {
 
 
     public void initConnectionController(){
+        alreadyConnected = false ;
         chatWindow.getConnectionButton().addActionListener(e -> connection());
         chatWindow.getButtonChoose().addActionListener(e -> discussWith());
     }
@@ -27,11 +31,25 @@ public class AgentController {
 
     public void connection(){
         String pseudo = chatWindow.getPseudoTextField().getText();
+        boolean connected = false ;
 
         if (!pseudo.equals("")){
             //On appelle une fonction du modele pour la connection
-            agentClient.sendBroadCast(pseudo);
+            connected = agentClient.sendBroadCast(pseudo);
         }
+        if (connected && !alreadyConnected){
+            afterConnection();
+            chatWindow.getLabelPseudo().setText("Connected !");
+            alreadyConnected = true ;
+        } else {
+            chatWindow.getLabelPseudo().setText("Choisir un autre pseudo");
+        }
+     
+
+    }
+
+
+    public void afterConnection(){
         System.out.println("Connected !");
 		System.out.println("Voici la liste des utilisateurs disponibles :");
         agentClient.displayList(agentClient.getAllPseudos());
@@ -45,12 +63,12 @@ public class AgentController {
     	
 		//when connected, create udp server
 		UDPServer serverUdp = new UDPServer(agentClient.getPortNum(), agentClient.getAllPseudos(), this);
-		Thread server = serverUdp.setServer();
+		server = serverUdp.setServer();
 		server.start();
 
 		//And create a tcp server
 		TCPServer serverTcp = new TCPServer(agentClient.getPortNum(), chatWindow,agentClient.getAllPseudos());
-		Thread servTcp = new Thread(serverTcp);
+		servTcp = new Thread(serverTcp);
         servTcp.start();
 
     }

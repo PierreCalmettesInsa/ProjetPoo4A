@@ -29,26 +29,24 @@ public class MessageFrame implements Runnable{
 
 		//path to maven
 		String pathOfProject = System.getProperty("user.dir");
-		String path = pathOfProject + "\\" + "chat\\" + "iconSend.jpg" ;
+		String path = pathOfProject + "\\" + "chat\\res\\" + "iconSend.jpg" ;
+		System.out.println(path);
 		Icon icon = new ImageIcon(path);
 		sendMessage=new JButton(icon);
-		sendMessage.setSize(300,300);
+		sendMessage.setPreferredSize(new Dimension(33, 20));
 
 		messageBox=new JTextField(30);
 		southPanel.add(messageBox);
 		southPanel.add(sendMessage);
-
-
-		//Icon icon = new ImageIcon("path/to/iconSend.jpg");
-		//sendMessage.setIconImage(icon);
-		//(Toolkit.getDefaultToolkit().getImage(getClass().getResource("path/to/iconSend.jpg")));
-		//f.setIconImage(ImageIO.read("res/iconSend.jpg"));
+		southPanel.setBorder(BorderFactory.createEmptyBorder(25, // top
+		25, // left
+		10, // bottom
+		25) // right
+		);
 
 
 		//pour display le texte
-		
 		chatbox=new JTextArea();
-		//chatbox.append("Pierre : coucou\n Thomas : Yo\n");
 		chatbox.setLineWrap(true);
 		chatbox.setEditable(false);
 		chatScrollPane = new JScrollPane(chatbox);
