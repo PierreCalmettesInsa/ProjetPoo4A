@@ -17,3 +17,9 @@ Interface utilisateur :
   
   
 Historique : nous avons choisi d'utiliser sqlite.
+
+
+
+Deuxième version avec ip:
+Plus besoin d'argument : lancer jar.App
+Il faut au préalable rajouter une ègle dans le pare-feu pour autoriser les traffic entrant et sortant java.
