@@ -21,7 +21,6 @@ public class AgentModel {
 	
     private int userId;
 	protected String address ;
-	protected int port ;
 	protected HashMap<String, String> listOfPseudo ;
     private String pseudo;
     final Scanner scanner = new Scanner(System.in) ;
@@ -29,10 +28,9 @@ public class AgentModel {
 
     
 
-	public AgentModel(int userId, String address, int port)
+	public AgentModel(int userId, String address)
 	{
 		this.address = address ;
-		this.port = port ;
 		listOfPseudo = new HashMap<String, String>() ;
 		pseudo = "";
 	}
@@ -55,11 +53,6 @@ public class AgentModel {
     //Modifie le pseudo de l'Utilisateur
     public void setPseudo(String pseudo) {
         this.pseudo = pseudo;
-    }
-
-    //Retourne le numéro de Port de l4utilisateur
-    public int getPortNum() {
-        return this.port;
     }
 
     //Retourne l'adresse IP de l'Utilisateur
@@ -115,10 +108,10 @@ public class AgentModel {
 		ExecutorService es = Executors.newCachedThreadPool();
 		InetAddress broadCastIp = getBroadcast();
 
-		es.execute(new ClientRunnable(broadCastIp, port,clientUdp, port));
+		es.execute(new ClientRunnable(broadCastIp,25555,25554,clientUdp));
 
 		try {
-			es.awaitTermination(2, TimeUnit.SECONDS);
+			es.awaitTermination(4, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}	
@@ -146,7 +139,7 @@ public class AgentModel {
 		connected = this.sendBroadCastWithName(clientUdp);
 		if (connected) {
 			this.listOfPseudo = clientUdp.getList();
-			this.listOfPseudo.put(this.getPseudo(), Integer.toString(this.getPortNum()));
+			this.listOfPseudo.put(this.getPseudo(), this.getIpAddr());
 		}else {
 			System.out.println("Pseudo deja utilise");
 		}
@@ -161,17 +154,17 @@ public class AgentModel {
 		//String pseudoToContact = this.askForInput();
 		
 		if (this.listOfPseudo.containsKey(pseudoToContact)) {
-			int portToContact = Integer.parseInt(this.listOfPseudo.get(pseudoToContact));
+			String addressToContact = this.listOfPseudo.get(pseudoToContact);
 			
 			try {
-				clientSocket = new Socket("127.0.0.1",portToContact);
+				clientSocket = new Socket(addressToContact,25556);
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			
-			TCPClient clientTcp = new TCPClient(this.getPortNum(),portToContact, "127.0.0.1", clientSocket, this.getPseudo(), pseudoToContact, chat);
+			TCPClient clientTcp = new TCPClient(this.getIpAddr(), addressToContact, clientSocket, this.getPseudo(), pseudoToContact, chat);
 			Thread clTcp = new Thread(clientTcp);
 			clTcp.start();
 		}

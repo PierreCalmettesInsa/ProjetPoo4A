@@ -10,8 +10,8 @@ import java.util.Scanner;
 
 public class TCPClient implements Runnable {
 	
-	protected int port;
-	protected String address ;
+	protected String addressDist ;
+	protected String myAddress ;
 	final Scanner scan = new Scanner(System.in);
 	private Socket s;
 	private String myPseudo ;
@@ -19,18 +19,16 @@ public class TCPClient implements Runnable {
 	protected ChatWindow chat ;
 	protected PrintWriter out ;
 	protected BufferedReader in ;
-	protected int myPort ;
 	protected MessageFrame msgFrame ;
 
 	
-	public TCPClient(int myPort, int port, String address, Socket s, String myPseudo, String oPseudo, ChatWindow chat) {
-		this.port = port ;
-		this.address = address;
+	public TCPClient(String myAddress, String addressDist, Socket s, String myPseudo, String oPseudo, ChatWindow chat) {
+		this.myAddress = myAddress;
+		this.addressDist = addressDist;
 		this.s = s;
 		this.myPseudo = myPseudo ;
 		this.oPseudo = oPseudo;
 		this.chat = chat ;
-		this.myPort = myPort ;
 
 		try {
 			out = new PrintWriter(s.getOutputStream());
@@ -48,7 +46,7 @@ public class TCPClient implements Runnable {
 		}
 
 		//Look for history, to be replace by ip address
-		ArrayList<String> allMessagesHisto = DatabaseChat.getHistory(myPort, port);
+		ArrayList<String> allMessagesHisto = DatabaseChat.getHistory(myAddress, addressDist);
 
 		for (String msg : allMessagesHisto){
 			msgFrame.getMessageArea().append(msg + "\n");
@@ -71,7 +69,7 @@ public class TCPClient implements Runnable {
 		out.println(msgToSend);
 		out.flush();
 
-		DatabaseChat.addToHistory(this.myPort, port,(myPseudo + " : " + msgToSend));
+		DatabaseChat.addToHistory(this.myAddress, this.addressDist,(myPseudo + " : " + msgToSend));
 	}
 	
 	public void run() {
@@ -99,7 +97,7 @@ public class TCPClient implements Runnable {
             			while(received != null) {
 							received = in.readLine();
 							msgFrame.getMessageArea().append(oPseudo + " : " + received + "\n");
-							DatabaseChat.addToHistory(myPort, port, (oPseudo + " : " + received) );
+							DatabaseChat.addToHistory(myAddress, addressDist, (oPseudo + " : " + received) );
 
             			}
             			

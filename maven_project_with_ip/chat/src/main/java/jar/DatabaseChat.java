@@ -30,8 +30,8 @@ public class DatabaseChat {
 
             // Adding a table with 3 columns : user1 id , user2 id and a message
             String sql = "CREATE TABLE history (\n" 
-                + "user1 integer,\n" 
-                + "user2 integer,\n"
+                + "user1 text,\n" 
+                + "user2 text,\n"
                 + "message text\n" + ")";
 
             Statement statement = connection.createStatement();
@@ -69,13 +69,13 @@ public class DatabaseChat {
 
 
 
-    public static ArrayList<String> getHistory(int user1, int user2){
+    public static ArrayList<String> getHistory(String user1, String user2){
         String pathOfsqlite = System.getProperty("user.dir");
         String path = pathOfsqlite + "\\" + user1 + ".db" ;
 
         ArrayList<String> messages = new ArrayList<String>();
 
-        String sql = "SELECT * FROM history where user1=" + user1 + " AND user2=" + user2 ;
+        String sql = "SELECT * FROM history where user1=\"" + user1 + "\" AND user2=\"" + user2 + "\"" ;
 
         try {
             Connection connection = DriverManager.getConnection("jdbc:sqlite:" + path);
@@ -92,6 +92,7 @@ public class DatabaseChat {
 
 
         } catch (SQLException e){
+            System.out.println("error get message");
             System.out.println(e.getMessage());
         }
 
@@ -104,7 +105,7 @@ public class DatabaseChat {
 
 
 
-    public static void addToHistory(int user1, int user2, String message){
+    public static void addToHistory(String user1, String user2, String message){
         String pathOfsqlite = System.getProperty("user.dir");
         String path = pathOfsqlite + "\\" + user1 + ".db" ;
 
@@ -115,8 +116,8 @@ public class DatabaseChat {
 
             PreparedStatement prestment = connection.prepareStatement(sql);
 
-            prestment.setInt(1, user1);
-            prestment.setInt(2, user2);
+            prestment.setString(1, user1);
+            prestment.setString(2, user2);
             prestment.setString(3, message);
 
             prestment.executeUpdate();

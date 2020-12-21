@@ -22,6 +22,10 @@ public class AgentController {
         chatWindow = window;
     }
 
+    public AgentModel getAgent(){
+        return this.agentClient ;
+    }
+
 
     public void initConnectionController(){
         alreadyConnected = false ;
@@ -70,7 +74,7 @@ public class AgentController {
 		serverUdp2.start();
 
 		//And create a tcp server
-		TCPServer serverTcp = new TCPServer(25556, chatWindow,agentClient.getAllPseudos());
+		TCPServer serverTcp = new TCPServer(agentClient.getIpAddr(),25556, chatWindow,agentClient.getAllPseudos());
 		servTcp = new Thread(serverTcp);
         servTcp.start();
 

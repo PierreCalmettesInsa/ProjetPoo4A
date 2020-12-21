@@ -7,6 +7,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 
@@ -46,20 +47,21 @@ public class UDPClient {
 		byte[] buffer = new byte[1024];
 		DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 		try {
+			server.setSoTimeout(500);
 			server.receive(packet);
 		} catch (IOException e) {
 			server.close();
+			return null ;
 		} 	
 		return packet ;
 		
 	}
 	
 	
-	public Runnable send_pseudo(String address, int remotePort, int port){
+	public Runnable send_pseudo(String address, int remotePort){
             String packetPseudoToClient = pseudo.trim();
             
             try {
-	              // System.out.println(packetPseudoToClient + " envoie : " + packetPseudoToClient + " to : " + address + " " + port);
 
 	               DatagramSocket client = new DatagramSocket();
 	               
@@ -70,7 +72,7 @@ public class UDPClient {
 	
 	               DatagramPacket packet2 = receive(client);
 	               
-	               send(client,Integer.toString(port), adresse,remotePort);
+	               send(client,client.getLocalAddress().getHostAddress(), adresse,remotePort);
 	               
 	               packet2 = receive(client);
 	               
@@ -90,16 +92,16 @@ public class UDPClient {
 		            	   
 		            	   //On a recu un nom, on demande le port associe
 		            	  
-		            	   send(client,"Port now",adresse, remotePort);
+		            	   send(client,"Address now",adresse, remotePort);
 	            	   
 		            	   //On le recoit
 		            	  
 		            	   packet2 = receive(client);
 		            	   
-			               String otherPort = new String(packet2.getData()).trim();
+			               String otherAddress = new String(packet2.getData()).trim();
 			               
-			               //Adding Pseudo and port to the HashMap
-		            	   allPseudos.put(paquetCourant, otherPort);
+			               //Adding Pseudo and address to the HashMap
+		            	   allPseudos.put(paquetCourant, otherAddress);
 		            	   
 		            	   //Ask for the next pseudo
 		            	
@@ -127,35 +129,35 @@ public class UDPClient {
 
 
 
-		public Runnable sendBroadcast(InetAddress adresse, int remotePort){
-		try {
-			// System.out.println(packetPseudoToClient + " envoie : " + packetPseudoToClient + " to : " + address + " " + port);
+		public ArrayList<String> sendBroadcast(InetAddress adresse, int remotePort){
+			ArrayList<String> allIps = new ArrayList<String>();
+			try {
+				// System.out.println(packetPseudoToClient + " envoie : " + packetPseudoToClient + " to : " + address + " " + port);
 
-			DatagramSocket client = new DatagramSocket();
-			client.setBroadcast(true);
+				DatagramSocket client = new DatagramSocket();
+				client.setBroadcast(true);
 
+				System.out.println(adresse   + "   " + remotePort);
 
-			send(client, "Send your ip", adresse, remotePort);
-	
+				send(client, "Send your ip", adresse, remotePort);
+		
 
-			client.setSoTimeout(1500);
+				DatagramPacket packet2 = receive(client);
+				while (packet2 != null){
+					String paquetCourant = new String(packet2.getData()).trim();
+					System.out.println(paquetCourant);
 
-			DatagramPacket packet2 = receive(client);
+					allIps.add(paquetCourant);
+					packet2 = receive(client);
 
-			String paquetCourant = new String(packet2.getData()).trim();
+				}
+				System.out.println("fini");
 
-			System.out.println(paquetCourant);
-			System.out.println(paquetCourant);
-			System.out.println(paquetCourant);
-
-
-					
-
-		} catch (SocketException e) {
-			e.printStackTrace();
+			} catch (SocketException e) {
+				e.printStackTrace();
+			}
+			return allIps ;
 		}
-			return null ;
-	}
 
 }
 
@@ -166,20 +168,26 @@ public class UDPClient {
 
 class ClientRunnable implements Runnable {
 	InetAddress address;
-	int remotePort ;
-	int port ;
+	int remotePort1 ;
+	int remotePort2 ;
+
 	UDPClient client ;
 	
-   public ClientRunnable(InetAddress address, int remotePort, UDPClient client, int port) {
+   public ClientRunnable(InetAddress address, int remotePort1, 	int remotePort2, UDPClient client) {
 	   this.address = address ;
-	   this.port = port;
-	   this.remotePort = remotePort;
+	   this.remotePort1 = remotePort1;
+	   this.remotePort2 = remotePort2;
 	   this.client = client;
    }
 
    public void run() {
-	   client.sendBroadcast(address, 25554);
-	  // client.send_pseudo(address, remotePort, port);
+	   	ArrayList<String> allIps  = client.sendBroadcast(address, remotePort2);
+	   	if (allIps != null){
+			for (String ip : allIps){
+				System.out.println(ip);
+					client.send_pseudo(ip, remotePort1);
+			}
+		}
    }
 }
 

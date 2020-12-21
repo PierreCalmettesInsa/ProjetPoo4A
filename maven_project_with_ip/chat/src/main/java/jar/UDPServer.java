@@ -58,7 +58,7 @@ public class UDPServer {
 					try {
 
 						DatagramSocket server;
-						server = new DatagramSocket(port2, InetAddress.getByName("0.0.0.0"));
+						server = new DatagramSocket(port2, InetAddress.getByName(agent.getAgent().getIpAddr()));
 				
 						server.setBroadcast(true);
 
@@ -67,13 +67,9 @@ public class UDPServer {
 						DatagramPacket packet = receive(server);
 
 
-						try {
-							send(server, InetAddress.getLocalHost().getHostAddress(), packet.getAddress(),
-									packet.getPort());
-						} catch (UnknownHostException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+						send(server, agent.getAgent().getIpAddr(), packet.getAddress(),
+						packet.getPort());
+		
 
 					   server.close();
 
@@ -107,18 +103,18 @@ public class UDPServer {
 	                String newPseudo = new String(packet.getData());
 	                newPseudo = newPseudo.trim();
 	                
-	                send(server, "Send your port", packet.getAddress(), packet.getPort());
+	                send(server, "Send your address", packet.getAddress(), packet.getPort());
 	                packet = receive(server);
-	                String newPort =String.valueOf(new String(packet.getData()).trim());
+	                String newAddress =String.valueOf(new String(packet.getData()).trim());
 
 	
 	                //System.out.println("Recu de la part de " + packet.getAddress() 
 	                //+ " sur le port " + packet.getPort() + " :" + newPseudo);
 	                
-	               	if (allPseudos.containsValue(newPort)){
+	               	if (allPseudos.containsValue(newAddress)){
 						//This port is already in the list
 						System.out.println("Removing from list");
-						allPseudos.values().remove(newPort);
+						allPseudos.values().remove(newAddress);
 					}                
 	              
 	                if (allPseudos.containsKey(newPseudo)){
@@ -139,9 +135,9 @@ public class UDPServer {
 		                //On recoit la demande de port
 	                
 	                	packet = receive(server);
-		                String reponsePourPort = new String(packet.getData()).trim();
+		                String reponsePourAdresse = new String(packet.getData()).trim();
 		                
-		                if (reponsePourPort.equals("Port now")) {
+		                if (reponsePourAdresse.equals("Address now")) {
 	                			
 		                	send(server,user.getValue(),packet.getAddress(),packet.getPort());
 
@@ -149,7 +145,7 @@ public class UDPServer {
 		                	packet = receive(server);
    
 		                } else {
-		                	System.out.println("Mauvais comportement utilisateur, demande de port incorrect");
+		                	System.out.println("Mauvais comportement utilisateur, demande d'adresse incorrect");
 		                }
 	                }
 	                
@@ -159,7 +155,7 @@ public class UDPServer {
 
 	                
 	                //Ajout du nouveau client dans la liste
-					allPseudos.put(newPseudo, newPort);
+					allPseudos.put(newPseudo, newAddress);
 					ArrayList<String> listOfPSeudos = allPseudos.keySet().stream().collect(Collectors.toCollection(ArrayList::new)); 
 					agent.displayConnectedUser(listOfPSeudos);
 

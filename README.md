@@ -22,4 +22,9 @@ Historique : nous avons choisi d'utiliser sqlite.
 
 Deuxième version avec ip:
 Plus besoin d'argument : lancer jar.App
-Il faut au préalable rajouter une ègle dans le pare-feu pour autoriser les traffic entrant et sortant java.
+Il faut au préalable rajouter une règle dans le pare-feu pour autoriser les traffic entrant et sortant java.
+
+
+Une fenêtretre s'ouvre, il faut alors entrer son pseudo puis cliquer sur connexion, s'affiche alors dans une liste déroulante tous les utilisateurs disponibles.
+Choisir un pseudo puis cliquer sur discuter avec  -> une fenêtre de chat s'ouvre, l'historique des conversations précedentes avec l'autre utilisateur s'affiche.
+
