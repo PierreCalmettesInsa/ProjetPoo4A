@@ -46,6 +46,12 @@ public class AgentController {
             afterConnection();
             chatWindow.getLabelPseudo().setText("Connected !");
             alreadyConnected = true ;
+            chatWindow.getConnectionButton().setText("Changer de pseudo");
+        } else if (connected && alreadyConnected){
+            System.out.println("Changement pseudo");
+            ArrayList<String> listOfPSeudos = agentClient.getAllPseudos().keySet().stream().collect(Collectors.toCollection(ArrayList::new)); 
+
+            displayConnectedUser(listOfPSeudos);
         } else {
             chatWindow.getLabelPseudo().setText("Choisir un autre pseudo");
         }

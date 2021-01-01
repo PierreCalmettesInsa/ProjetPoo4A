@@ -139,6 +139,13 @@ public class AgentModel {
 		connected = this.sendBroadCastWithName(clientUdp);
 		if (connected) {
 			this.listOfPseudo = clientUdp.getList();
+
+			if (this.listOfPseudo.containsValue(this.getIpAddr())){
+				//This port is already in the list
+				System.out.println("Removing from list");
+				listOfPseudo.values().remove(this.getIpAddr());
+			} 
+			  
 			this.listOfPseudo.put(this.getPseudo(), this.getIpAddr());
 		}else {
 			System.out.println("Pseudo deja utilise");
