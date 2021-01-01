@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.Map.Entry;
+import java.awt.event.WindowAdapter ;
+import java.awt.event.WindowEvent ;
+
 
 public class TCPServer implements Runnable {
 
@@ -96,6 +99,21 @@ class AcceptedConnection implements Runnable {
 
 	public void initListener(){
 		msgFrame.getButtonSend().addActionListener(e -> send());
+		msgFrame.getFrame().addWindowListener(new WindowAdapter()
+			{
+				@Override
+				public void windowClosing(WindowEvent e)
+				{
+					System.out.println("Closed");
+					out.close();
+					try {
+						link.close();
+					} catch (IOException ex) {
+						ex.printStackTrace();
+					}
+					e.getWindow().dispose();
+				}
+			});
 	}
 
 	public void send(){
@@ -106,6 +124,8 @@ class AcceptedConnection implements Runnable {
 
 		DatabaseChat.addToHistory(myAddress,link.getInetAddress().getHostAddress(), (myPseudo + " : " + msgToSend));
 	}
+
+
 	
 	@Override
 	public void run() {

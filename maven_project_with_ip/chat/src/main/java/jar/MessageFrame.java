@@ -64,9 +64,6 @@ public class MessageFrame implements Runnable{
 
 	}
 
-
-
-
 	public JButton getButtonSend(){
 		return this.sendMessage ;
 	}
@@ -78,6 +75,10 @@ public class MessageFrame implements Runnable{
 
 	public JTextArea getMessageArea(){
 		return this.chatbox;
+	}
+
+	public JFrame getFrame(){
+		return this.chatConnection ;
 	}
 
 

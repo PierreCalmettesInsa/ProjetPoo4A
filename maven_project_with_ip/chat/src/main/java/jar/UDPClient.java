@@ -14,6 +14,7 @@ import java.util.HashMap;
 public class UDPClient {
 	
 	protected String pseudo ;
+	protected String myAddress ;
 
 	protected HashMap<String, String> allPseudos ;
 	protected boolean isConnected ;
@@ -21,9 +22,11 @@ public class UDPClient {
 	
 	
 	
-	public UDPClient(String pseudo, HashMap<String, String> allPseudos)
+	
+	public UDPClient(String pseudo, String myAddress, HashMap<String, String> allPseudos)
 	{
 		this.pseudo = pseudo;
+		this.myAddress = myAddress;
 		this.allPseudos = allPseudos;
 		isConnected = true ;
 	}
@@ -72,7 +75,9 @@ public class UDPClient {
 	
 	               DatagramPacket packet2 = receive(client);
 	               
-	               send(client,client.getLocalAddress().getHostAddress(), adresse,remotePort);
+				   send(client,myAddress, adresse,remotePort);
+				   System.out.println(myAddress);
+
 	               
 	               packet2 = receive(client);
 	               

@@ -135,7 +135,7 @@ public class AgentModel {
 		System.out.println("Choisir un nom :");
 		this.setPseudo(pseudoChoisi);
 		System.out.println("Pseudo choisit :" + this.getPseudo() + " , envoie aux autres users en cours ...");
-		UDPClient clientUdp = new UDPClient(this.getPseudo(), this.getAllPseudos());
+		UDPClient clientUdp = new UDPClient(this.getPseudo(), this.getIpAddr(), this.getAllPseudos());
 		connected = this.sendBroadCastWithName(clientUdp);
 		if (connected) {
 			this.listOfPseudo = clientUdp.getList();

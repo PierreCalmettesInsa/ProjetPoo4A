@@ -7,6 +7,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.awt.event.WindowAdapter ;
+import java.awt.event.WindowEvent ;
 
 public class TCPClient implements Runnable {
 	
@@ -61,6 +63,21 @@ public class TCPClient implements Runnable {
 
 	public void initListener(){
 		msgFrame.getButtonSend().addActionListener(e -> send());
+		msgFrame.getFrame().addWindowListener(new WindowAdapter()
+		{
+			@Override
+			public void windowClosing(WindowEvent e)
+			{
+				System.out.println("Closed");
+				out.close();
+				try {
+					s.close();
+				} catch (IOException ex) {
+					ex.printStackTrace();
+				}
+				e.getWindow().dispose();
+			}
+		});
 	}
 
 	public void send(){

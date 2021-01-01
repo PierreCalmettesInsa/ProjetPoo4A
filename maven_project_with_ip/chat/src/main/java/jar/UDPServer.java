@@ -105,7 +105,9 @@ public class UDPServer {
 	                
 	                send(server, "Send your address", packet.getAddress(), packet.getPort());
 	                packet = receive(server);
-	                String newAddress =String.valueOf(new String(packet.getData()).trim());
+					String newAddress =String.valueOf(new String(packet.getData()).trim());
+					System.out.println(newAddress);
+
 
 	
 	                //System.out.println("Recu de la part de " + packet.getAddress() 
@@ -156,6 +158,7 @@ public class UDPServer {
 	                
 	                //Ajout du nouveau client dans la liste
 					allPseudos.put(newPseudo, newAddress);
+
 					ArrayList<String> listOfPSeudos = allPseudos.keySet().stream().collect(Collectors.toCollection(ArrayList::new)); 
 					agent.displayConnectedUser(listOfPSeudos);
 
