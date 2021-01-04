@@ -14,6 +14,7 @@ public class MessageFrame implements Runnable{
 	private JScrollPane chatScrollPane;
 	private JTextArea chatbox;
 	private JButton sendMessage ;
+	private JButton sendFile ;
 	private JTextField messageBox ;
 
 
@@ -30,14 +31,15 @@ public class MessageFrame implements Runnable{
 		//path to maven
 		String pathOfProject = System.getProperty("user.dir");
 		String path = pathOfProject + "\\" + "chat\\res\\" + "iconSend.jpg" ;
-		System.out.println(path);
 		Icon icon = new ImageIcon(path);
 		sendMessage=new JButton(icon);
 		sendMessage.setPreferredSize(new Dimension(33, 20));
+		sendFile = new JButton("send file") ;
 
 		messageBox=new JTextField(30);
 		southPanel.add(messageBox);
 		southPanel.add(sendMessage);
+		southPanel.add(sendFile) ;
 		southPanel.setBorder(BorderFactory.createEmptyBorder(25, // top
 		25, // left
 		10, // bottom
@@ -66,6 +68,10 @@ public class MessageFrame implements Runnable{
 
 	public JButton getButtonSend(){
 		return this.sendMessage ;
+	}
+
+	public JButton getButtonFile(){
+		return this.sendFile ;
 	}
 
 

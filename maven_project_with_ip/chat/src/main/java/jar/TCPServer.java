@@ -1,8 +1,16 @@
 package jar;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -10,19 +18,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.Map.Entry;
-import java.awt.event.WindowAdapter ;
-import java.awt.event.WindowEvent ;
 
+import javax.swing.JFileChooser;
+
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class TCPServer implements Runnable {
 
 	protected int port;
 	protected ChatWindow chat;
-	protected String myAddress ;
+	protected String myAddress;
 	protected HashMap<String, String> allPseudos;
 
 	public TCPServer(String myAddress, int port, ChatWindow chat, HashMap<String, String> allPseudos) {
-		this.myAddress = myAddress ;
+		this.myAddress = myAddress;
 		this.port = port;
 		this.chat = chat;
 		this.allPseudos = allPseudos;
@@ -58,7 +68,7 @@ public class TCPServer implements Runnable {
 
 class AcceptedConnection implements Runnable {
 	final Socket link;
-	protected String myAddress ;
+	protected String myAddress;
 	protected BufferedReader in;
 	protected PrintWriter out;
 	protected ChatWindow chat;
@@ -67,8 +77,9 @@ class AcceptedConnection implements Runnable {
 	protected HashMap<String, String> allPseudos;
 	protected MessageFrame msgFrame;
 
-	public AcceptedConnection(String myAddress, Socket link, ChatWindow chat, String myPseudo, HashMap<String, String> allPseudos) {
-		this.myAddress = myAddress ;
+	public AcceptedConnection(String myAddress, Socket link, ChatWindow chat, String myPseudo,
+			HashMap<String, String> allPseudos) {
+		this.myAddress = myAddress;
 		this.link = link;
 		this.chat = chat;
 		this.myPseudo = myPseudo;
@@ -87,42 +98,90 @@ class AcceptedConnection implements Runnable {
 				e.printStackTrace();
 			}
 
-
-			//Add a listener to the button to send a message
-			initListener() ;
-
+			// Add a listener to the button to send a message
+			initListener();
 
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public void initListener(){
+	public void initListener() {
 		msgFrame.getButtonSend().addActionListener(e -> send());
-		msgFrame.getFrame().addWindowListener(new WindowAdapter()
-			{
-				@Override
-				public void windowClosing(WindowEvent e)
-				{
-					System.out.println("Closed");
-					out.close();
-					try {
-						link.close();
-					} catch (IOException ex) {
-						ex.printStackTrace();
-					}
-					e.getWindow().dispose();
+		msgFrame.getButtonFile().addActionListener(e -> sendFile());
+
+		msgFrame.getFrame().addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				System.out.println("Closed");
+				out.close();
+				try {
+					link.close();
+				} catch (IOException ex) {
+					ex.printStackTrace();
 				}
-			});
+				e.getWindow().dispose();
+			}
+		});
 	}
 
-	public void send(){
+	public void send() {
 		String msgToSend = msgFrame.getMessageField().getText();
 		msgFrame.getMessageArea().append(myPseudo + " : " + msgToSend + "\n");
 		out.println(msgToSend);
 		out.flush();
 
-		DatabaseChat.addToHistory(myAddress,link.getInetAddress().getHostAddress(), (myPseudo + " : " + msgToSend));
+		DatabaseChat.addToHistory(myAddress, link.getInetAddress().getHostAddress(), (myPseudo + " : " + msgToSend));
+	}
+
+	public void sendFile() {
+
+		String msgToSend = "---Sending file--- code : 12976#";
+		out.println(msgToSend);
+		out.flush();
+
+
+
+		JFileChooser fChooser = new JFileChooser();
+		fChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+		int fileChosen = fChooser.showOpenDialog(msgFrame.getFrame());
+
+		if (fileChosen == JFileChooser.APPROVE_OPTION) {
+			File file = fChooser.getSelectedFile();
+
+			msgToSend = file.getName();
+			System.out.println(msgToSend);
+
+			out.println(msgToSend);
+			out.flush();
+
+
+			byte[] buffer = new byte[(int) file.length()];
+			try {
+				FileInputStream fInput = new FileInputStream(file);
+				BufferedInputStream bInput = new BufferedInputStream(fInput);
+				bInput.read(buffer, 0, buffer.length);
+				OutputStream os = link.getOutputStream();
+				os.write(buffer,0,buffer.length);
+				os.flush();
+				System.out.println("Fini");
+
+				bInput.close();
+				//os.close();
+			
+
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}
+
+
+
 	}
 
 
@@ -163,8 +222,45 @@ class AcceptedConnection implements Runnable {
 						
 						while (received != null) {
 							received = in.readLine();
-							msgFrame.getMessageArea().append(oPseudo + " : " + received + "\n");
-							DatabaseChat.addToHistory(myAddress,link.getInetAddress().getHostAddress(), (oPseudo + " : " + received ));
+							//received.trim();
+
+							if (received != null && received.startsWith("---Sending file--- code : 12976#")){
+								System.out.println("Receiving file...");
+
+								received = in.readLine();
+								System.out.println(received);
+
+
+								byte [] mybytearray  = new byte [1024];
+
+								InputStream is = link.getInputStream();
+								FileOutputStream fOutput = new FileOutputStream(received);
+								BufferedOutputStream bOutput = new BufferedOutputStream(fOutput);
+								int bytesRead = is.read(mybytearray,0,mybytearray.length);
+								int current = bytesRead;
+								System.out.println("Receiving file...");
+
+
+								do {
+									System.out.println("Receiving file...");
+
+									bytesRead = is.read(mybytearray, current, (mybytearray.length-current));
+									System.out.println("Receiving file...");
+
+									if(bytesRead >= 0) current += bytesRead;
+								} while(bytesRead > -1);
+
+								System.out.println("Receiving file...");
+
+								bOutput.write(mybytearray, 0 , current);
+								bOutput.flush();
+								System.out.println("File " + received+ " downloaded (" + current + " bytes read)");
+								bOutput.close();
+
+							} else {
+								msgFrame.getMessageArea().append(oPseudo + " : " + received + "\n");
+								DatabaseChat.addToHistory(myAddress,link.getInetAddress().getHostAddress(), (oPseudo + " : " + received ));
+							}
 
 						}
 						

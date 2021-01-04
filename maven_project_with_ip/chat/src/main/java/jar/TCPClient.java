@@ -1,13 +1,24 @@
 package jar;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.awt.event.WindowAdapter ;
+
+import javax.swing.JFileChooser;
+
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent ;
 
 public class TCPClient implements Runnable {
@@ -63,6 +74,7 @@ public class TCPClient implements Runnable {
 
 	public void initListener(){
 		msgFrame.getButtonSend().addActionListener(e -> send());
+		msgFrame.getButtonFile().addActionListener(e -> sendFile());
 		msgFrame.getFrame().addWindowListener(new WindowAdapter()
 		{
 			@Override
@@ -87,6 +99,55 @@ public class TCPClient implements Runnable {
 		out.flush();
 
 		DatabaseChat.addToHistory(this.myAddress, this.addressDist,(myPseudo + " : " + msgToSend));
+	}
+
+	public void sendFile() {
+
+		String msgToSend = "---Sending file--- code : 12976#";
+		out.println(msgToSend);
+		out.flush();
+
+
+
+		JFileChooser fChooser = new JFileChooser();
+		fChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+		int fileChosen = fChooser.showOpenDialog(msgFrame.getFrame());
+
+		if (fileChosen == JFileChooser.APPROVE_OPTION) {
+			File file = fChooser.getSelectedFile();
+
+			msgToSend = file.getName();
+			System.out.println(msgToSend);
+			out.println(msgToSend);
+			out.flush();
+
+
+			byte[] buffer = new byte[(int)file.length()];
+			try {
+				FileInputStream fInput = new FileInputStream(file);
+				BufferedInputStream bInput = new BufferedInputStream(fInput);
+				bInput.read(buffer, 0, buffer.length);
+				OutputStream os = s.getOutputStream();
+				os.write(buffer,0,buffer.length);
+				os.flush();
+				System.out.println("Fini");
+
+				bInput.close();
+				//os.close();
+			
+
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}
+
+
+
 	}
 	
 	public void run() {
@@ -113,8 +174,34 @@ public class TCPClient implements Runnable {
             		try {            			
             			while(received != null) {
 							received = in.readLine();
-							msgFrame.getMessageArea().append(oPseudo + " : " + received + "\n");
-							DatabaseChat.addToHistory(myAddress, addressDist, (oPseudo + " : " + received) );
+							
+							if (received != null && received.startsWith("---Sending file--- code : 12976#")){
+								System.out.println("Receiving file...");
+
+								received = in.readLine();
+								byte [] mybytearray  = new byte [10000000];
+
+								InputStream is = s.getInputStream();
+								FileOutputStream fOutput = new FileOutputStream(received);
+								BufferedOutputStream bOutput = new BufferedOutputStream(fOutput);
+								int bytesRead = is.read(mybytearray,0,mybytearray.length);
+								int current = bytesRead;
+
+								do {
+									bytesRead =
+										is.read(mybytearray, current, (mybytearray.length-current));
+									if(bytesRead >= 0) current += bytesRead;
+								} while(bytesRead > -1);
+
+								bOutput.write(mybytearray, 0 , current);
+								bOutput.flush();
+								System.out.println("File " + received+ " downloaded (" + current + " bytes read)");
+								bOutput.close();
+
+							} else {
+								msgFrame.getMessageArea().append(oPseudo + " : " + received + "\n");
+								DatabaseChat.addToHistory(myAddress, addressDist, (oPseudo + " : " + received) );
+							}
 
             			}
             			

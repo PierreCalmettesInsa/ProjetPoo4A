@@ -17,11 +17,9 @@ public class App
         InetAddress inetAddress = InetAddress.getLocalHost() ;
         address = inetAddress.getHostAddress();
         
-        if (address.equals("192.168.56.1")){
-            address = "192.168.1.25";
-        }
-        else if (address.equals("127.0.1.1")){
-            address = "192.168.1.27";
+
+        if (address.equals("127.0.1.1")){
+            address = "192.168.56.101";
         }
 
 
