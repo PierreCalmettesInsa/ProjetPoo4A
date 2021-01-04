@@ -20,6 +20,8 @@ public class ChatWindow {
 
 	// pour connection frame
 	private JFrame frameConnection;
+	private JRadioButton yesButton ;
+	private JRadioButton noButton ;
 	private JButton buttonConnection;
 	private JTextField fieldPseudo;
 	private JLabel enterPseudo ;
@@ -82,16 +84,30 @@ public class ChatWindow {
 		frameConnection.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frameConnection.setLocationRelativeTo(null);
 
+		yesButton   = new JRadioButton("Yes");
+		noButton    = new JRadioButton("No", true);
+		
+		ButtonGroup bgroup = new ButtonGroup();
+        bgroup.add(yesButton);
+		bgroup.add(noButton);
+		
+		JPanel radioPanel = new JPanel();
+        radioPanel.setLayout(new GridLayout(3, 1));
+        radioPanel.add(yesButton);
+		radioPanel.add(noButton);
+		
+		radioPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Outdoor?"));
+
+		frameConnection.getContentPane().add(radioPanel, BorderLayout.NORTH);
+
+
 		fieldPseudo = new JTextField();
 		enterPseudo = new JLabel("Entrez votre pseudo");
 
 		buttonConnection = new JButton("Se connecter");
 		buttonConnection.setMnemonic(KeyEvent.VK_ENTER);
 
-		/*
-		 * An easy way to put space between a top-level container and its contents is to
-		 * put the contents in a JPanel that has an "empty" border.
-		 */
+
 		JPanel pane = new JPanel(new GridLayout(0, 1));
 		pane.add(fieldPseudo);
 		pane.add(enterPseudo);
@@ -177,6 +193,11 @@ public class ChatWindow {
 
 	public JFrame getConnectionFrame() {
 		return this.frameConnection;
+	}
+
+
+	public boolean isOutdoorUser(){
+		return this.yesButton.isSelected();
 	}
 
 	public JPanel getPanel() {

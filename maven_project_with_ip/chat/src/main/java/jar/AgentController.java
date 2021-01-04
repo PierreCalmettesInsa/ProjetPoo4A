@@ -1,5 +1,8 @@
 package jar;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
@@ -38,22 +41,37 @@ public class AgentController {
         String pseudo = chatWindow.getPseudoTextField().getText();
         boolean connected = false ;
 
-        if (!pseudo.equals("")){
-            //On appelle une fonction du modele pour la connection
-            connected = agentClient.sendBroadCast(pseudo);
-        }
-        if (connected && !alreadyConnected){
-            afterConnection();
-            chatWindow.getLabelPseudo().setText("Connected !");
-            alreadyConnected = true ;
-            chatWindow.getConnectionButton().setText("Changer de pseudo");
-        } else if (connected && alreadyConnected){
-            System.out.println("Changement pseudo");
-            ArrayList<String> listOfPSeudos = agentClient.getAllPseudos().keySet().stream().collect(Collectors.toCollection(ArrayList::new)); 
+        if (chatWindow.isOutdoorUser()){
+            String line;
+            try {
+                System.out.println("Outdoor");
+                URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/subscribe?name=" + pseudo );
+                BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+                line = in.lines().collect(Collectors.joining());
+                System.out.println( line );
+                in.close();
+            }
+            catch (Exception e){
+             e.printStackTrace();
+            }
+        }else {
+            if (!pseudo.equals("")){
+                //On appelle une fonction du modele pour la connection
+                connected = agentClient.sendBroadCast(pseudo);
+            }
+            if (connected && !alreadyConnected){
+                afterConnection();
+                chatWindow.getLabelPseudo().setText("Connected !");
+                alreadyConnected = true ;
+                chatWindow.getConnectionButton().setText("Changer de pseudo");
+            } else if (connected && alreadyConnected){
+                System.out.println("Changement pseudo");
+                ArrayList<String> listOfPSeudos = agentClient.getAllPseudos().keySet().stream().collect(Collectors.toCollection(ArrayList::new)); 
 
-            displayConnectedUser(listOfPSeudos);
-        } else {
-            chatWindow.getLabelPseudo().setText("Choisir un autre pseudo");
+                displayConnectedUser(listOfPSeudos);
+            } else {
+                chatWindow.getLabelPseudo().setText("Choisir un autre pseudo");
+            }
         }
      
 
