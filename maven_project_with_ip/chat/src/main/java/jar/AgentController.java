@@ -6,6 +6,16 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
 
 
 
@@ -34,6 +44,19 @@ public class AgentController {
         alreadyConnected = false ;
         chatWindow.getConnectionButton().addActionListener(e -> connection());
         chatWindow.getButtonChoose().addActionListener(e -> discussWith());
+
+        chatWindow.getConnectionFrame().addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+                System.out.println("Closed");
+                if (chatWindow.isOutdoorUser() && alreadyConnected){
+                    System.out.println("offline");
+                    agentClient.changeStatusServlet("offline", agentClient.getPseudo());
+                }
+		
+				e.getWindow().dispose();
+			}
+		});
     }
 
 
@@ -41,40 +64,32 @@ public class AgentController {
         String pseudo = chatWindow.getPseudoTextField().getText();
         boolean connected = false ;
 
-        if (chatWindow.isOutdoorUser()){
-            String line;
-            try {
-                System.out.println("Outdoor");
-                URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/subscribe?name=" + pseudo );
-                BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
-                line = in.lines().collect(Collectors.joining());
-                System.out.println( line );
-                in.close();
-            }
-            catch (Exception e){
-             e.printStackTrace();
-            }
-        }else {
-            if (!pseudo.equals("")){
-                //On appelle une fonction du modele pour la connection
-                connected = agentClient.sendBroadCast(pseudo);
-            }
-            if (connected && !alreadyConnected){
-                afterConnection();
-                chatWindow.getLabelPseudo().setText("Connected !");
-                alreadyConnected = true ;
-                chatWindow.getConnectionButton().setText("Changer de pseudo");
-            } else if (connected && alreadyConnected){
-                System.out.println("Changement pseudo");
-                ArrayList<String> listOfPSeudos = agentClient.getAllPseudos().keySet().stream().collect(Collectors.toCollection(ArrayList::new)); 
 
-                displayConnectedUser(listOfPSeudos);
-            } else {
-                chatWindow.getLabelPseudo().setText("Choisir un autre pseudo");
+        if (!pseudo.equals("")){
+
+            if (chatWindow.isOutdoorUser()){
+                connected = agentClient.sendToServlet(pseudo);
+            }
+            else {
+
+            //On appelle une fonction du modele pour la connection
+            connected = agentClient.sendBroadCast(pseudo);
             }
         }
-     
+        if (connected && !alreadyConnected){
+            afterConnection();
+            chatWindow.getLabelPseudo().setText("Connected !");
+            alreadyConnected = true ;
+            chatWindow.getConnectionButton().setText("Changer de pseudo");
+        } else if (connected && alreadyConnected){
+            System.out.println("Changement pseudo");
+            ArrayList<String> listOfPSeudos = agentClient.getAllPseudos().keySet().stream().collect(Collectors.toCollection(ArrayList::new)); 
 
+            displayConnectedUser(listOfPSeudos);
+        } else {
+            chatWindow.getLabelPseudo().setText("Choisir un autre pseudo");
+        }
+        
     }
 
 

@@ -17,6 +17,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
 public class AgentModel {
 	
     private int userId;
@@ -153,7 +166,70 @@ public class AgentModel {
 		
 		return connected ;
 
-    }
+	}
+	
+	public boolean sendToServlet(String pseudoChoisi){
+		boolean connected = false ;
+
+		this.setPseudo(pseudoChoisi);
+		System.out.println("Pseudo choisit :" + this.getPseudo() + " , envoie aux autres users en cours ...");
+		String line;
+		try {
+			System.out.println("Outdoor");
+			URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/subscribe?name=" + pseudoChoisi );
+			BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+			line = in.lines().collect(Collectors.joining());
+			System.out.println( line );
+			in.close();
+			connected = true ;
+
+		}
+		catch (Exception e){
+			e.printStackTrace();
+		}
+
+		changeStatusServlet("online", pseudoChoisi);
+
+
+
+		return connected ;
+	}
+
+	public void changeStatusServlet(String status, String pseudoChoisi){
+		if (status == "offline"){
+			this.listOfPseudo.clear();
+		} else {
+			try {
+				System.out.println(status);
+				URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/publish?name=" + pseudoChoisi + "&state=" + status);
+
+				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+				DocumentBuilder db = dbf.newDocumentBuilder();
+				Document doc = db.parse(url.openStream());
+
+				NodeList node = doc.getElementsByTagName("user");
+
+				for (int i = 0; i < node.getLength(); i++) {
+					Element ele = (Element) node.item(i);
+					
+					String name = (ele.getElementsByTagName("name").item(0).getTextContent());
+					String ip = (ele.getElementsByTagName("ip").item(0).getTextContent());
+					String stateDist = (ele.getElementsByTagName("state").item(0).getTextContent());
+					System.out.println(name);
+					System.out.println(ip);
+					System.out.println(stateDist);
+
+					if (stateDist.trim().equals("online")){
+						System.out.println(name);
+						this.listOfPseudo.put(name,ip);
+					}
+				}
+			}
+			catch (Exception e){
+				e.printStackTrace();
+			}
+		}
+	}
     
     
     public void connectToUser(String pseudoToContact, ChatWindow chat) {
