@@ -80,7 +80,11 @@ public class AgentController {
             afterConnection();
             chatWindow.getLabelPseudo().setText("Connected !");
             alreadyConnected = true ;
+            Thread servletUpdater = new Thread(new ServletThread(agentClient,this));
+            servletUpdater.start();
+
             chatWindow.getConnectionButton().setText("Changer de pseudo");
+
         } else if (connected && alreadyConnected){
             System.out.println("Changement pseudo");
             ArrayList<String> listOfPSeudos = agentClient.getAllPseudos().keySet().stream().collect(Collectors.toCollection(ArrayList::new)); 

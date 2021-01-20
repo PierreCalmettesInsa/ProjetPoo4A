@@ -230,6 +230,38 @@ public class AgentModel {
 			}
 		}
 	}
+
+	public void servletNotify(){
+		try {
+			URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/notify");
+
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			Document doc = db.parse(url.openStream());
+
+			NodeList node = doc.getElementsByTagName("user");
+
+			for (int i = 0; i < node.getLength(); i++) {
+				Element ele = (Element) node.item(i);
+				
+				String name = (ele.getElementsByTagName("name").item(0).getTextContent());
+				String ip = (ele.getElementsByTagName("ip").item(0).getTextContent());
+				String stateDist = (ele.getElementsByTagName("state").item(0).getTextContent());
+				System.out.println(name);
+				System.out.println(ip);
+				System.out.println(stateDist);
+
+				if (stateDist.trim().equals("online")){
+					System.out.println(name);
+					this.listOfPseudo.put(name,ip);
+				}
+			}
+		}
+		catch (Exception e){
+			e.printStackTrace();
+		}
+
+	}
     
     
     public void connectToUser(String pseudoToContact, ChatWindow chat) {
