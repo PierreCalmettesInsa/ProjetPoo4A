@@ -68,11 +68,12 @@ public class AgentController {
         if (!pseudo.equals("")){
 
             if (chatWindow.isOutdoorUser()){
-                connected = agentClient.sendToServlet(pseudo);
+                connected = agentClient.sendToServlet(pseudo,"outdoor");
             }
             else {
 
             //On appelle une fonction du modele pour la connection
+            connected = agentClient.sendToServlet(pseudo,"indoor");
             connected = agentClient.sendBroadCast(pseudo);
             }
         }
@@ -80,7 +81,7 @@ public class AgentController {
             afterConnection();
             chatWindow.getLabelPseudo().setText("Connected !");
             alreadyConnected = true ;
-            Thread servletUpdater = new Thread(new ServletThread(agentClient,this));
+            Thread servletUpdater = new Thread(new ServletThread(agentClient,this,chatWindow));
             servletUpdater.start();
 
             chatWindow.getConnectionButton().setText("Changer de pseudo");
@@ -88,7 +89,6 @@ public class AgentController {
         } else if (connected && alreadyConnected){
             System.out.println("Changement pseudo");
             ArrayList<String> listOfPSeudos = agentClient.getAllPseudos().keySet().stream().collect(Collectors.toCollection(ArrayList::new)); 
-
             displayConnectedUser(listOfPSeudos);
         } else {
             chatWindow.getLabelPseudo().setText("Choisir un autre pseudo");
@@ -131,6 +131,10 @@ public class AgentController {
         if (autrePseudo.equals(agentClient.getPseudo()) || autrePseudo.equals("")){
             System.out.println("Erreur, choisir une autre personne");
         } else {
+            String typeOtherClient = agentClient.getType(autrePseudo);
+            if (chatWindow.isOutdoorUser() || typeOtherClient == "outdoor"){
+                agentClient.openConnectionServlet(autrePseudo);
+            }
             agentClient.connectToUser(autrePseudo, chatWindow);
         }
 

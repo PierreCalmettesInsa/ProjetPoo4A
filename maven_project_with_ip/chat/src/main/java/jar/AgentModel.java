@@ -1,25 +1,33 @@
 package jar;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
+import java.net.MalformedURLException;
 import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.net.http.HttpClient;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
@@ -31,120 +39,96 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 public class AgentModel {
-	
-    private int userId;
-	protected String address ;
-	protected HashMap<String, String> listOfPseudo ;
-    private String pseudo;
-    final Scanner scanner = new Scanner(System.in) ;
-    private Socket clientSocket ;
 
-    
+	private int userId;
+	protected String address;
+	protected HashMap<String, String> listOfPseudo;
+	private String pseudo;
+	final Scanner scanner = new Scanner(System.in);
+	private Socket clientSocket;
 
-	public AgentModel(int userId, String address)
-	{
-		this.address = address ;
-		listOfPseudo = new HashMap<String, String>() ;
+	public AgentModel(int userId, String address) {
+		this.address = address;
+		listOfPseudo = new HashMap<String, String>();
 		pseudo = "";
 	}
-	
-	
-	public HashMap<String, String> getAllPseudos(){
-		return this.listOfPseudo ;
+
+	public HashMap<String, String> getAllPseudos() {
+		return this.listOfPseudo;
 	}
-	
-    //Retourne l'ID de l'Utilisateur
-    public int getUserId() {
-        return this.userId;
-    }
 
-    //Retourne le pseudo de l'Utilisateur
-    public String getPseudo() {
-        return this.pseudo;
-    }
-
-    //Modifie le pseudo de l'Utilisateur
-    public void setPseudo(String pseudo) {
-        this.pseudo = pseudo;
-    }
-
-    //Retourne l'adresse IP de l'Utilisateur
-    public String getIpAddr() {
-        return this.address;
-    }
-    
-    public String askForInput() {
-		String pseudo = scanner.next();
-		return pseudo ;
+	// Retourne l'ID de l'Utilisateur
+	public int getUserId() {
+		return this.userId;
 	}
-	
 
+	// Retourne le pseudo de l'Utilisateur
+	public String getPseudo() {
+		return this.pseudo;
+	}
 
+	// Modifie le pseudo de l'Utilisateur
+	public void setPseudo(String pseudo) {
+		this.pseudo = pseudo;
+	}
 
+	// Retourne l'adresse IP de l'Utilisateur
+	public String getIpAddr() {
+		return this.address;
+	}
 
-	public InetAddress getBroadcast(){
+	public InetAddress getBroadcast() {
 		Enumeration<NetworkInterface> interfaces;
-		InetAddress broadcast = null ;
+		InetAddress broadcast = null;
 		try {
 			interfaces = NetworkInterface.getNetworkInterfaces();
 
-			while (interfaces.hasMoreElements()) 
-			{
+			while (interfaces.hasMoreElements()) {
 				NetworkInterface networkInterface = interfaces.nextElement();
 				if (networkInterface.isLoopback())
-					continue;    
-				for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) 
-				{
+					continue;
+				for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
 					broadcast = interfaceAddress.getBroadcast();
-					if (broadcast != null){
-						return broadcast ;
+					if (broadcast != null) {
+						return broadcast;
 					}
 				}
-			}	
+			}
 		} catch (SocketException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return broadcast ;
+		return broadcast;
 	}
 
-
-
-
-
-
-
-
-    
-    //return true if all other agent agreed the connection
-    public boolean sendBroadCastWithName(UDPClient clientUdp) {
+	// return true if all other agent agreed the connection
+	public boolean sendBroadCastWithName(UDPClient clientUdp) {
 		ExecutorService es = Executors.newCachedThreadPool();
 		InetAddress broadCastIp = getBroadcast();
 
-		es.execute(new ClientRunnable(broadCastIp,25555,25554,clientUdp));
+		es.execute(new ClientRunnable(broadCastIp, 25555, 25554, clientUdp));
 
 		try {
 			es.awaitTermination(4, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		}	
-		return clientUdp.isConnected ;
-    	
-    }
-    
-    
-    public void displayList(HashMap<String, String> list) {
-    	
-    	for (Map.Entry<String, String> user : list.entrySet()) {
-    		System.out.print(user.getKey() + " ");
-    		//System.out.print(user.getValue() + "  ");
-    	}
-    	System.out.println(" ");
-    }
-    
-    public boolean sendBroadCast(String pseudoChoisi) {
-    	
-		boolean connected = false ;
+		}
+		return clientUdp.isConnected;
+
+	}
+
+	public void displayList(HashMap<String, String> list) {
+
+		for (Map.Entry<String, String> user : list.entrySet()) {
+			System.out.print(user.getKey() + " ");
+			// System.out.print(user.getValue() + " ");
+		}
+		System.out.println(" ");
+	}
+
+	public boolean sendBroadCast(String pseudoChoisi) {
+
+		boolean connected = false;
 		System.out.println("Choisir un nom :");
 		this.setPseudo(pseudoChoisi);
 		System.out.println("Pseudo choisit :" + this.getPseudo() + " , envoie aux autres users en cours ...");
@@ -153,55 +137,54 @@ public class AgentModel {
 		if (connected) {
 			this.listOfPseudo = clientUdp.getList();
 
-			if (this.listOfPseudo.containsValue(this.getIpAddr())){
-				//This port is already in the list
+			if (this.listOfPseudo.containsValue(this.getIpAddr())) {
+				// This port is already in the list
 				System.out.println("Removing from list");
 				listOfPseudo.values().remove(this.getIpAddr());
-			} 
-			  
+			}
+
 			this.listOfPseudo.put(this.getPseudo(), this.getIpAddr());
-		}else {
+		} else {
 			System.out.println("Pseudo deja utilise");
 		}
-		
-		return connected ;
+
+		return connected;
 
 	}
-	
-	public boolean sendToServlet(String pseudoChoisi){
-		boolean connected = false ;
+
+	public boolean sendToServlet(String pseudoChoisi, String type) {
+		boolean connected = false;
 
 		this.setPseudo(pseudoChoisi);
 		System.out.println("Pseudo choisit :" + this.getPseudo() + " , envoie aux autres users en cours ...");
 		String line;
 		try {
 			System.out.println("Outdoor");
-			URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/subscribe?name=" + pseudoChoisi );
+			URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/subscribe?name=" + pseudoChoisi
+					+ "&type=" + type);
 			BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
 			line = in.lines().collect(Collectors.joining());
-			System.out.println( line );
+			System.out.println(line);
 			in.close();
-			connected = true ;
+			connected = true;
 
-		}
-		catch (Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 		changeStatusServlet("online", pseudoChoisi);
 
-
-
-		return connected ;
+		return connected;
 	}
 
-	public void changeStatusServlet(String status, String pseudoChoisi){
-		if (status == "offline"){
+	public void changeStatusServlet(String status, String pseudoChoisi) {
+		if (status == "offline") {
 			this.listOfPseudo.clear();
 		} else {
 			try {
 				System.out.println(status);
-				URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/publish?name=" + pseudoChoisi + "&state=" + status);
+				URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/publish?name=" + pseudoChoisi
+						+ "&state=" + status);
 
 				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 				DocumentBuilder db = dbf.newDocumentBuilder();
@@ -211,23 +194,22 @@ public class AgentModel {
 
 				for (int i = 0; i < node.getLength(); i++) {
 					Element ele = (Element) node.item(i);
-					
+
 					String name = (ele.getElementsByTagName("name").item(0).getTextContent());
-					String ip = (ele.getElementsByTagName("ip").item(0).getTextContent());
+					String type = (ele.getElementsByTagName("type").item(0).getTextContent());
 					String stateDist = (ele.getElementsByTagName("state").item(0).getTextContent());
 
-					if (stateDist.trim().equals("online")){
-						this.listOfPseudo.put(name,ip);
+					if (stateDist.trim().equals("online") && type == "outdoor") {
+						this.listOfPseudo.put(name, type);
 					}
 				}
-			}
-			catch (Exception e){
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
 	}
 
-	public void servletNotify(){
+	public void servletNotify() {
 		try {
 			URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/notify");
 
@@ -239,21 +221,141 @@ public class AgentModel {
 
 			for (int i = 0; i < node.getLength(); i++) {
 				Element ele = (Element) node.item(i);
-				
+
 				String name = (ele.getElementsByTagName("name").item(0).getTextContent());
-				String ip = (ele.getElementsByTagName("ip").item(0).getTextContent());
+				String type = (ele.getElementsByTagName("type").item(0).getTextContent());
 				String stateDist = (ele.getElementsByTagName("state").item(0).getTextContent());
 
-				if (stateDist.trim().equals("online")){
-					this.listOfPseudo.put(name,ip);
+				if (stateDist.trim().equals("online") && type == "outdoor") {
+					this.listOfPseudo.put(name, type);
 				}
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public String getType(String pseudo) {
+
+		return this.listOfPseudo.get(pseudo);
+	}
+
+	public void openConnectionServlet(String pseudo) {
+		try {
+			URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/openConnection?myName="
+					+ this.getPseudo() + "&otherUserName=" + pseudo);
+
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			db.parse(url.openStream());
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public ArrayList<String> checkForConnection(){
+		try {
+			URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/openConnection?myName=" + this.getPseudo());
+
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			Document doc = db.parse(url.openStream());
+
+			NodeList node = doc.getElementsByTagName("user");
+			String name = "" ;
+			String ip = "";
+			for (int i = 0; i < node.getLength(); i++) {
+				Element ele = (Element) node.item(i);
+				
+				 name = (ele.getElementsByTagName("name").item(0).getTextContent());
+				 ip = (ele.getElementsByTagName("ip").item(0).getTextContent());
+
+			}
+
+			ArrayList<String> nameAndIp = new ArrayList<String>() ;
+			nameAndIp.add(name);
+			nameAndIp.add(ip);
+			
+			return nameAndIp ;
+
+		}
+		catch (Exception e){
+			e.printStackTrace();
+		}
+		return null ;
+	}
+
+	public void sendMsgToServlet(String user1, String user2, String msgToSend) {
+		try {
+			URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/message");
+	
+			URLConnection con = url.openConnection();
+
+			HttpURLConnection http = (HttpURLConnection)con;
+			http.setRequestMethod("POST");
+			http.setDoOutput(true);
+
+			Map<String,String> param = new HashMap<>();
+			param.put("user1", user1);
+			param.put("user2", user2);
+			param.put("msg", msgToSend);
+
+			StringJoiner separateur = new StringJoiner("&");
+			
+			for(Map.Entry<String,String> entry : param.entrySet()){
+				separateur.add(URLEncoder.encode(entry.getKey(), "UTF-8") + "=" + URLEncoder.encode(entry.getValue(), "UTF-8"));
+			}
+			byte[] out = separateur.toString().getBytes(StandardCharsets.UTF_8);
+			int length = out.length;
+
+			http.setFixedLengthStreamingMode(length);
+
+			http.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+			http.connect();
+			try(OutputStream os = http.getOutputStream()) {
+				os.write(out);
+			}
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	public String getMsgFromServlet(String user1, String user2){
+		String msg = "";
+		try {
+			URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/message?user1=" + user1 + "&user2=" + user2);
+
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			Document doc = db.parse(url.openStream());
+
+			NodeList node = doc.getElementsByTagName("user");
+			for (int i = 0; i < node.getLength(); i++) {
+				Element ele = (Element) node.item(i);
+				
+				 msg = (ele.getElementsByTagName("msg").item(0).getTextContent());
+
+			}
+			
+
 		}
 		catch (Exception e){
 			e.printStackTrace();
 		}
 
+		return msg ;
+
 	}
+
+
+
+
     
     
     public void connectToUser(String pseudoToContact, ChatWindow chat) {
