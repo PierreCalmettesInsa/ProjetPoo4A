@@ -215,12 +215,8 @@ public class AgentModel {
 					String name = (ele.getElementsByTagName("name").item(0).getTextContent());
 					String ip = (ele.getElementsByTagName("ip").item(0).getTextContent());
 					String stateDist = (ele.getElementsByTagName("state").item(0).getTextContent());
-					System.out.println(name);
-					System.out.println(ip);
-					System.out.println(stateDist);
 
 					if (stateDist.trim().equals("online")){
-						System.out.println(name);
 						this.listOfPseudo.put(name,ip);
 					}
 				}
@@ -247,12 +243,8 @@ public class AgentModel {
 				String name = (ele.getElementsByTagName("name").item(0).getTextContent());
 				String ip = (ele.getElementsByTagName("ip").item(0).getTextContent());
 				String stateDist = (ele.getElementsByTagName("state").item(0).getTextContent());
-				System.out.println(name);
-				System.out.println(ip);
-				System.out.println(stateDist);
 
 				if (stateDist.trim().equals("online")){
-					System.out.println(name);
 					this.listOfPseudo.put(name,ip);
 				}
 			}
@@ -270,6 +262,7 @@ public class AgentModel {
 		
 		if (this.listOfPseudo.containsKey(pseudoToContact)) {
 			String addressToContact = this.listOfPseudo.get(pseudoToContact);
+			System.out.println(addressToContact);
 			
 			try {
 				clientSocket = new Socket(addressToContact,25556);
