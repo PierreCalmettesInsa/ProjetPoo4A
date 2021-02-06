@@ -172,19 +172,19 @@ public class AgentModel {
 			e.printStackTrace();
 		}
 
-		changeStatusServlet("online", pseudoChoisi);
+		changeStatusServlet("online", pseudoChoisi, type);
 
 		return connected;
 	}
 
-	public void changeStatusServlet(String status, String pseudoChoisi, String type) {
+	public void changeStatusServlet(String status, String pseudoChoisi, String myType) {
 		if (status == "offline") {
 			this.listOfPseudo.clear();
 		} else {
 			try {
 				System.out.println(status);
 				URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/publish?name=" + pseudoChoisi
-						+ "&state=" + status + "&ip=" + this.getIpAddr() + "&type=" + type);
+						+ "&state=" + status + "&ip=" + this.getIpAddr() + "&type=" + myType);
 
 				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 				DocumentBuilder db = dbf.newDocumentBuilder();

@@ -51,7 +51,7 @@ public class AgentController {
                 System.out.println("Closed");
                 if (chatWindow.isOutdoorUser() && alreadyConnected){
                     System.out.println("offline");
-                    agentClient.changeStatusServlet("offline", agentClient.getPseudo());
+                    agentClient.changeStatusServlet("offline", agentClient.getPseudo(), "outdoor");
                 }
 		
 				e.getWindow().dispose();
