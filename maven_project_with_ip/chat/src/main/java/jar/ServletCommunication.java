@@ -46,11 +46,24 @@ public class ServletCommunication implements Runnable {
 
     public void send() {
         String msgToSend = msgFrame.getMessageField().getText();
-        msgFrame.getMessageArea().append(myName + " : " + msgToSend + "\n");
 
-        agent.sendMsgToServlet(myName, otherUserName, msgToSend);
+        if (msgToSend  != "" ){
+            msgFrame.getMessageArea().append(myName + " : " + msgToSend + "\n");
 
-        DatabaseChat.addToHistory(agent.getIpAddr(), distantIpAddress, (myName + " : " + msgToSend));
+            msgFrame.getMessageField().setText("");
+
+            agent.sendMsgToServlet(myName, otherUserName, msgToSend);
+
+            DatabaseChat.addToHistory(agent.getIpAddr(), distantIpAddress, (myName + " : " + msgToSend));
+        }
+
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
     }
 
     public void receive() {
