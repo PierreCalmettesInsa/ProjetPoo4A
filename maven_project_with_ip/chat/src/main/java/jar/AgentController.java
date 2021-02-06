@@ -135,7 +135,9 @@ public class AgentController {
             if (chatWindow.isOutdoorUser() || typeOtherClient == "outdoor"){
                 agentClient.openConnectionServlet(autrePseudo);
 
-                Thread servletChatting = new Thread(new ServletCommunication(agentClient, agentClient.getPseudo(),agentClient.getPseudo(), agentClient.getIpAddr(),chatWindow));
+                String ipDist = agentClient.listOfPseudo.get(autrePseudo);
+
+                Thread servletChatting = new Thread(new ServletCommunication(agentClient, agentClient.getPseudo(), autrePseudo,ipDist,chatWindow));
                 servletChatting.start();
 
 

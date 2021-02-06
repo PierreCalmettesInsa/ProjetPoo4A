@@ -1,27 +1,24 @@
 package jar;
 
-
-
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 public class ServletCommunication implements Runnable {
 
     protected ChatWindow chat;
-    protected String myName ;
-    protected String otherUserName ;
-    protected MessageFrame msgFrame ;
-    protected AgentModel agent ;
-    protected String distantIpAddress ;
+    protected String myName;
+    protected String otherUserName;
+    protected MessageFrame msgFrame;
+    protected AgentModel agent;
+    protected String distantIpAddress;
 
-
-
-    public ServletCommunication(AgentModel agent, String myName, String otherUserName, String distantIpAddress, ChatWindow chat) {
+    public ServletCommunication(AgentModel agent, String myName, String otherUserName, String distantIpAddress,
+            ChatWindow chat) {
         this.myName = myName;
         this.otherUserName = otherUserName;
         this.chat = chat;
-        this.agent = agent ;
-        this.distantIpAddress = distantIpAddress ;
+        this.agent = agent;
+        this.distantIpAddress = distantIpAddress;
 
         // creat a new frame for the chat
         msgFrame = chat.launchWindowChat();
@@ -36,39 +33,48 @@ public class ServletCommunication implements Runnable {
     }
 
     public void initListener() {
-		msgFrame.getButtonSend().addActionListener(e -> send());
+        msgFrame.getButtonSend().addActionListener(e -> send());
 
-		msgFrame.getFrame().addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				System.out.println("Closed");
-				e.getWindow().dispose();
-			}
-		});
+        msgFrame.getFrame().addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                System.out.println("Closed");
+                e.getWindow().dispose();
+            }
+        });
     }
-    
+
     public void send() {
-		String msgToSend = msgFrame.getMessageField().getText();
+        String msgToSend = msgFrame.getMessageField().getText();
         msgFrame.getMessageArea().append(myName + " : " + msgToSend + "\n");
 
         agent.sendMsgToServlet(myName, otherUserName, msgToSend);
-        
 
-
-		DatabaseChat.addToHistory(agent.getIpAddr(), distantIpAddress , (myName + " : " + msgToSend));
+        DatabaseChat.addToHistory(agent.getIpAddr(), distantIpAddress, (myName + " : " + msgToSend));
     }
-    
-    public void receive(){
+
+    public void receive() {
 
         String msgReceived = agent.getMsgFromServlet(myName, otherUserName);
 
-        if (msgReceived != ""){
+        if (msgReceived != "") {
             msgFrame.getMessageArea().append(otherUserName + " : " + msgReceived + "\n");
-            DatabaseChat.addToHistory(agent.getIpAddr(), distantIpAddress , (myName + " : " + msgReceived));
+            DatabaseChat.addToHistory(agent.getIpAddr(), distantIpAddress, (myName + " : " + msgReceived));
         }
     }
 
-    public void run(){}
+    public void run() {
+
+        while (true) {
+            receive();
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
 
 
 
