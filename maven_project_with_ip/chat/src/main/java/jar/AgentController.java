@@ -77,7 +77,7 @@ public class AgentController {
             if (!chatWindow.isOutdoorUser()){
                 afterConnection();
             }
-            
+
             chatWindow.getLabelPseudo().setText("Connected !");
             alreadyConnected = true ;
             Thread servletUpdater = new Thread(new ServletThread(agentClient,this,chatWindow));
@@ -131,10 +131,17 @@ public class AgentController {
             System.out.println("Erreur, choisir une autre personne");
         } else {
             String typeOtherClient = agentClient.getType(autrePseudo);
+
             if (chatWindow.isOutdoorUser() || typeOtherClient == "outdoor"){
                 agentClient.openConnectionServlet(autrePseudo);
+
+                Thread servletChatting = new Thread(new ServletCommunication(agentClient, agentClient.getPseudo(),agentClient.getPseudo(), agentClient.getIpAddr(),chatWindow));
+                servletChatting.start();
+
+
+            } else {
+                agentClient.connectToUser(autrePseudo, chatWindow);
             }
-            agentClient.connectToUser(autrePseudo, chatWindow);
         }
 
     }

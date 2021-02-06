@@ -46,7 +46,7 @@ public class ServletThread implements Runnable {
                 String ip = isThereAConnection.get(1);
 
 
-                Thread servletChatting = new Thread(new servletCommunication(agentClient, agentClient.getPseudo(),name, ip,chat));
+                Thread servletChatting = new Thread(new ServletCommunication(agentClient, agentClient.getPseudo(),name, ip,chat));
                 servletChatting.start();
             }
 
@@ -63,71 +63,4 @@ public class ServletThread implements Runnable {
 }
 
 
-class servletCommunication implements Runnable {
 
-    protected ChatWindow chat;
-    protected String myName ;
-    protected String otherUserName ;
-    protected MessageFrame msgFrame ;
-    protected AgentModel agent ;
-    protected String distantIpAddress ;
-
-
-
-    public servletCommunication(AgentModel agent, String myName, String otherUserName, String distantIpAddress, ChatWindow chat) {
-        this.myName = myName;
-        this.otherUserName = otherUserName;
-        this.chat = chat;
-        this.agent = agent ;
-        this.distantIpAddress = distantIpAddress ;
-
-        // creat a new frame for the chat
-        msgFrame = chat.launchWindowChat();
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        // Add a listener to the button to send a message
-        initListener();
-    }
-
-    public void initListener() {
-		msgFrame.getButtonSend().addActionListener(e -> send());
-
-		msgFrame.getFrame().addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				System.out.println("Closed");
-				e.getWindow().dispose();
-			}
-		});
-    }
-    
-    public void send() {
-		String msgToSend = msgFrame.getMessageField().getText();
-        msgFrame.getMessageArea().append(myName + " : " + msgToSend + "\n");
-
-        agent.sendMsgToServlet(myName, otherUserName, msgToSend);
-        
-
-
-		DatabaseChat.addToHistory(agent.getIpAddr(), distantIpAddress , (myName + " : " + msgToSend));
-    }
-    
-    public void receive(){
-
-        String msgReceived = agent.getMsgFromServlet(myName, otherUserName);
-
-        if (msgReceived != ""){
-            msgFrame.getMessageArea().append(otherUserName + " : " + msgReceived + "\n");
-            DatabaseChat.addToHistory(agent.getIpAddr(), distantIpAddress , (myName + " : " + msgReceived));
-        }
-    }
-
-    public void run(){}
-
-
-
-}

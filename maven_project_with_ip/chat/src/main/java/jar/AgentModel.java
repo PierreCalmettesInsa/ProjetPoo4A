@@ -251,14 +251,7 @@ public class AgentModel {
 
 				this.typeOfPseudo.put(name, type);
 
-				System.out.println(name);
-				System.out.println(type);
-				System.out.println(stateDist);
-
-
-
 				if (stateDist.trim().equals("online") && type.trim().equals("outdoor")) {
-					System.out.println(name);
 
 					this.listOfPseudo.put(name, ip);
 				}
