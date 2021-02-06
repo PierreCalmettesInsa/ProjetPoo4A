@@ -73,7 +73,11 @@ public class AgentController {
         }
 
         if (connected && !alreadyConnected){
-            afterConnection();
+
+            if (!chatWindow.isOutdoorUser()){
+                afterConnection();
+            }
+            
             chatWindow.getLabelPseudo().setText("Connected !");
             alreadyConnected = true ;
             Thread servletUpdater = new Thread(new ServletThread(agentClient,this,chatWindow));
@@ -102,21 +106,19 @@ public class AgentController {
 
         displayConnectedUser(listOfPSeudos);
 
-        if (!chatWindow.isOutdoorUser()){
     	
-            //when connected, create udp server to send ip and udp server to send list
-            UDPServer serverUdp = new UDPServer(25555, 25554, agentClient.getAllPseudos(), this);
-            serverUdp1 = serverUdp.sendMyIp() ;
-            serverUdp2 = serverUdp.setServer();
-            serverUdp1.start();
-            serverUdp2.start();
+        //when connected, create udp server to send ip and udp server to send list
+        UDPServer serverUdp = new UDPServer(25555, 25554, agentClient.getAllPseudos(), this);
+        serverUdp1 = serverUdp.sendMyIp() ;
+        serverUdp2 = serverUdp.setServer();
+        serverUdp1.start();
+        serverUdp2.start();
 
-            //And create a tcp server
-            TCPServer serverTcp = new TCPServer(agentClient.getIpAddr(),25556, chatWindow,agentClient.getAllPseudos());
-            servTcp = new Thread(serverTcp);
-            servTcp.start();
+        //And create a tcp server
+        TCPServer serverTcp = new TCPServer(agentClient.getIpAddr(),25556, chatWindow,agentClient.getAllPseudos());
+        servTcp = new Thread(serverTcp);
+        servTcp.start();
 
-        }
 
     }
 

@@ -136,7 +136,7 @@ public class AgentModel {
 
 		boolean connected = false;
 		String type = "" ; 
-		
+
 		this.setPseudo(pseudoChoisi);
 		System.out.println("Pseudo choisit :" + this.getPseudo() + " , envoie aux autres users en cours ...");
 
@@ -251,7 +251,15 @@ public class AgentModel {
 
 				this.typeOfPseudo.put(name, type);
 
-				if (stateDist.trim().equals("online") && type == "outdoor") {
+				System.out.println(name);
+				System.out.println(type);
+				System.out.println(stateDist);
+
+
+
+				if (stateDist.trim().equals("online") && type.trim().equals("outdoor")) {
+					System.out.println(name);
+
 					this.listOfPseudo.put(name, ip);
 				}
 			}
