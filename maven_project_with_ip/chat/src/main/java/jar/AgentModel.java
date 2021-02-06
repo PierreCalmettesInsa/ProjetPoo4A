@@ -161,7 +161,7 @@ public class AgentModel {
 		try {
 			System.out.println("Outdoor");
 			URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/subscribe?name=" + pseudoChoisi
-					+ "&type=" + type);
+					+ "&type=" + type + "&ip=" + this.getIpAddr());
 			BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
 			line = in.lines().collect(Collectors.joining());
 			System.out.println(line);
@@ -177,14 +177,14 @@ public class AgentModel {
 		return connected;
 	}
 
-	public void changeStatusServlet(String status, String pseudoChoisi) {
+	public void changeStatusServlet(String status, String pseudoChoisi, String type) {
 		if (status == "offline") {
 			this.listOfPseudo.clear();
 		} else {
 			try {
 				System.out.println(status);
 				URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/publish?name=" + pseudoChoisi
-						+ "&state=" + status);
+						+ "&state=" + status + "&ip=" + this.getIpAddr() + "&type=" + type);
 
 				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 				DocumentBuilder db = dbf.newDocumentBuilder();
@@ -243,12 +243,34 @@ public class AgentModel {
 
 	public void openConnectionServlet(String pseudo) {
 		try {
-			URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/openConnection?myName="
-					+ this.getPseudo() + "&otherUserName=" + pseudo);
+			URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/openConnection");
 
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			DocumentBuilder db = dbf.newDocumentBuilder();
-			db.parse(url.openStream());
+			URLConnection con = url.openConnection();
+
+			HttpURLConnection http = (HttpURLConnection)con;
+			http.setRequestMethod("POST");
+			http.setDoOutput(true);
+
+			Map<String,String> param = new HashMap<>();
+			param.put("user1", this.getPseudo());
+			param.put("user2", pseudo);
+			param.put("ip", this.getIpAddr());
+
+			StringJoiner separateur = new StringJoiner("&");
+			
+			for(Map.Entry<String,String> entry : param.entrySet()){
+				separateur.add(URLEncoder.encode(entry.getKey(), "UTF-8") + "=" + URLEncoder.encode(entry.getValue(), "UTF-8"));
+			}
+			byte[] out = separateur.toString().getBytes(StandardCharsets.UTF_8);
+			int length = out.length;
+
+			http.setFixedLengthStreamingMode(length);
+
+			http.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+			http.connect();
+			try(OutputStream os = http.getOutputStream()) {
+				os.write(out);
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -275,11 +297,16 @@ public class AgentModel {
 
 			}
 
+			if (name != "" && ip != ""){
 			ArrayList<String> nameAndIp = new ArrayList<String>() ;
 			nameAndIp.add(name);
 			nameAndIp.add(ip);
 			
 			return nameAndIp ;
+			}
+			else {
+				return null ;
+			}
 
 		}
 		catch (Exception e){

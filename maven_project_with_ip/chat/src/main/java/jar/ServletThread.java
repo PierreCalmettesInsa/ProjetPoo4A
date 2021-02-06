@@ -120,12 +120,10 @@ class servletCommunication implements Runnable {
 
         String msgReceived = agent.getMsgFromServlet(myName, otherUserName);
 
-        msgFrame.getMessageArea().append(otherUserName + " : " + msgReceived + "\n");
-
-
-        DatabaseChat.addToHistory(agent.getIpAddr(), distantIpAddress , (myName + " : " + msgReceived));
-
-
+        if (msgReceived != ""){
+            msgFrame.getMessageArea().append(otherUserName + " : " + msgReceived + "\n");
+            DatabaseChat.addToHistory(agent.getIpAddr(), distantIpAddress , (myName + " : " + msgReceived));
+        }
     }
 
     public void run(){}
