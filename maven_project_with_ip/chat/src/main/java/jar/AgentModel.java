@@ -43,6 +43,7 @@ public class AgentModel {
 	private int userId;
 	protected String address;
 	protected HashMap<String, String> listOfPseudo;
+	protected HashMap<String, String> typeOfPseudo;
 	private String pseudo;
 	final Scanner scanner = new Scanner(System.in);
 	private Socket clientSocket;
@@ -50,11 +51,16 @@ public class AgentModel {
 	public AgentModel(int userId, String address) {
 		this.address = address;
 		listOfPseudo = new HashMap<String, String>();
+		typeOfPseudo = new HashMap<String, String>();
 		pseudo = "";
 	}
 
 	public HashMap<String, String> getAllPseudos() {
 		return this.listOfPseudo;
+	}
+
+	public HashMap<String, String> getAllTypePseudos() {
+		return this.typeOfPseudo;
 	}
 
 	// Retourne l'ID de l'Utilisateur
@@ -126,24 +132,38 @@ public class AgentModel {
 		System.out.println(" ");
 	}
 
-	public boolean sendBroadCast(String pseudoChoisi) {
+	public boolean sendBroadCast(String pseudoChoisi, boolean indoor) {
 
 		boolean connected = false;
-		System.out.println("Choisir un nom :");
+		String type = "" ; 
+		
 		this.setPseudo(pseudoChoisi);
 		System.out.println("Pseudo choisit :" + this.getPseudo() + " , envoie aux autres users en cours ...");
-		UDPClient clientUdp = new UDPClient(this.getPseudo(), this.getIpAddr(), this.getAllPseudos());
-		connected = this.sendBroadCastWithName(clientUdp);
-		if (connected) {
-			this.listOfPseudo = clientUdp.getList();
 
+		if (indoor){
+			UDPClient clientUdp = new UDPClient(this.getPseudo(), this.getIpAddr(), this.getAllPseudos());
+			connected = this.sendBroadCastWithName(clientUdp);
+			if (connected) {
+				this.listOfPseudo = clientUdp.getList();
+				type = "indoor" ;
+			}
+
+		} else {
+			connected = true ;
+			type = "outdoor" ;
+		}
+
+		if (connected) {
 			if (this.listOfPseudo.containsValue(this.getIpAddr())) {
-				// This port is already in the list
+				// This ip is already in the list
 				System.out.println("Removing from list");
 				listOfPseudo.values().remove(this.getIpAddr());
 			}
-
 			this.listOfPseudo.put(this.getPseudo(), this.getIpAddr());
+
+			sendToServlet(this.getPseudo(), type);
+			
+
 		} else {
 			System.out.println("Pseudo deja utilise");
 		}
@@ -155,8 +175,7 @@ public class AgentModel {
 	public boolean sendToServlet(String pseudoChoisi, String type) {
 		boolean connected = false;
 
-		this.setPseudo(pseudoChoisi);
-		System.out.println("Pseudo choisit :" + this.getPseudo() + " , envoie aux autres users en cours ...");
+
 		String line;
 		try {
 			System.out.println("Outdoor");
@@ -197,10 +216,13 @@ public class AgentModel {
 
 					String name = (ele.getElementsByTagName("name").item(0).getTextContent());
 					String type = (ele.getElementsByTagName("type").item(0).getTextContent());
+					String ip = (ele.getElementsByTagName("ip").item(0).getTextContent());
 					String stateDist = (ele.getElementsByTagName("state").item(0).getTextContent());
 
+					this.typeOfPseudo.put(name, type);
+
 					if (stateDist.trim().equals("online") && type == "outdoor") {
-						this.listOfPseudo.put(name, type);
+						this.listOfPseudo.put(name, ip);
 					}
 				}
 			} catch (Exception e) {
@@ -224,10 +246,13 @@ public class AgentModel {
 
 				String name = (ele.getElementsByTagName("name").item(0).getTextContent());
 				String type = (ele.getElementsByTagName("type").item(0).getTextContent());
+				String ip = (ele.getElementsByTagName("ip").item(0).getTextContent());
 				String stateDist = (ele.getElementsByTagName("state").item(0).getTextContent());
 
+				this.typeOfPseudo.put(name, type);
+
 				if (stateDist.trim().equals("online") && type == "outdoor") {
-					this.listOfPseudo.put(name, type);
+					this.listOfPseudo.put(name, ip);
 				}
 			}
 		} catch (Exception e) {
@@ -238,7 +263,7 @@ public class AgentModel {
 
 	public String getType(String pseudo) {
 
-		return this.listOfPseudo.get(pseudo);
+		return this.typeOfPseudo.get(pseudo);
 	}
 
 	public void openConnectionServlet(String pseudo) {

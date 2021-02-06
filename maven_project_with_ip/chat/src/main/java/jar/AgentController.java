@@ -67,16 +67,11 @@ public class AgentController {
 
         if (!pseudo.equals("")){
 
-            if (chatWindow.isOutdoorUser()){
-                connected = agentClient.sendToServlet(pseudo,"outdoor");
-            }
-            else {
-
             //On appelle une fonction du modele pour la connection
-            connected = agentClient.sendToServlet(pseudo,"indoor");
-            connected = agentClient.sendBroadCast(pseudo);
-            }
+            connected = agentClient.sendBroadCast(pseudo, !chatWindow.isOutdoorUser()); 
+
         }
+
         if (connected && !alreadyConnected){
             afterConnection();
             chatWindow.getLabelPseudo().setText("Connected !");
@@ -107,19 +102,21 @@ public class AgentController {
 
         displayConnectedUser(listOfPSeudos);
 
-
+        if (!chatWindow.isOutdoorUser()){
     	
-		//when connected, create udp server to send ip and udp server to send list
-        UDPServer serverUdp = new UDPServer(25555, 25554, agentClient.getAllPseudos(), this);
-        serverUdp1 = serverUdp.sendMyIp() ;
-        serverUdp2 = serverUdp.setServer();
-        serverUdp1.start();
-		serverUdp2.start();
+            //when connected, create udp server to send ip and udp server to send list
+            UDPServer serverUdp = new UDPServer(25555, 25554, agentClient.getAllPseudos(), this);
+            serverUdp1 = serverUdp.sendMyIp() ;
+            serverUdp2 = serverUdp.setServer();
+            serverUdp1.start();
+            serverUdp2.start();
 
-		//And create a tcp server
-		TCPServer serverTcp = new TCPServer(agentClient.getIpAddr(),25556, chatWindow,agentClient.getAllPseudos());
-		servTcp = new Thread(serverTcp);
-        servTcp.start();
+            //And create a tcp server
+            TCPServer serverTcp = new TCPServer(agentClient.getIpAddr(),25556, chatWindow,agentClient.getAllPseudos());
+            servTcp = new Thread(serverTcp);
+            servTcp.start();
+
+        }
 
     }
 
