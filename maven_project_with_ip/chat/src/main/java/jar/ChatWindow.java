@@ -81,7 +81,7 @@ public class ChatWindow {
 		// Create and set up the window.
 		frameConnection = new JFrame("connectionWindow");
 		frameConnection.getContentPane().setLayout(new BorderLayout());
-		frameConnection.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frameConnection.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		frameConnection.setLocationRelativeTo(null);
 
 		yesButton   = new JRadioButton("Yes");

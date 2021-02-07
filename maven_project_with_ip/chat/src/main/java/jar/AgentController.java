@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+import javax.swing.JFrame;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -15,6 +16,7 @@ import org.w3c.dom.NodeList;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+
 
 
 
@@ -48,15 +50,42 @@ public class AgentController {
         chatWindow.getConnectionFrame().addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
+                /*
                 System.out.println("Closed");
                 if (chatWindow.isOutdoorUser() && alreadyConnected){
                     System.out.println("offline");
                     agentClient.changeStatusServlet("offline", agentClient.getPseudo(), "outdoor");
                 }
+                */
+
+
+                Minimizer min = new Minimizer();
+                initMinimizer(min);
+                
 		
-				e.getWindow().dispose();
 			}
 		});
+    }
+
+
+    public void initMinimizer(Minimizer min){
+        min.getDisplayMin().addActionListener(e -> displayChat(min));
+        min.getExitMin().addActionListener(e -> closeChat());
+    }
+
+    public void displayChat(Minimizer min){
+        chatWindow.getConnectionFrame().setVisible(true);
+        min.getTray().remove(min.getTrayIcon());
+    }
+
+    public void closeChat(){
+        System.out.println("Closed");
+        if (chatWindow.isOutdoorUser() && alreadyConnected){
+            System.out.println("offline");
+            agentClient.changeStatusServlet("offline", agentClient.getPseudo(), "outdoor");
+        }
+        System.exit(0);
+
     }
 
 
