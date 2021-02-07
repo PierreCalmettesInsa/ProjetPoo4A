@@ -2,6 +2,8 @@ package jar;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.util.ArrayList;
 
 public class ServletCommunication implements Runnable {
 
@@ -72,11 +74,23 @@ public class ServletCommunication implements Runnable {
 
         if (msgReceived != "") {
             msgFrame.getMessageArea().append(otherUserName + " : " + msgReceived + "\n");
-            DatabaseChat.addToHistory(agent.getIpAddr(), distantIpAddress, (myName + " : " + msgReceived));
+            DatabaseChat.addToHistory(agent.getIpAddr(), distantIpAddress, (otherUserName + " : " + msgReceived));
         }
     }
 
     public void run() {
+
+
+        //Look for history, to be replace by ip address
+        ArrayList<String> allMessagesHisto = DatabaseChat.getHistory(agent.getIpAddr(), distantIpAddress);
+
+        for (String msg : allMessagesHisto){
+            msgFrame.getMessageArea().append(msg + "\n");
+        }
+
+
+        msgFrame.getMessageArea().append("Vous êtes en discussion avec : " + otherUserName + "\n");
+
 
         while (true) {
             receive();

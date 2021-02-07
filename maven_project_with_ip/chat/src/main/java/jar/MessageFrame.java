@@ -30,7 +30,7 @@ public class MessageFrame implements Runnable{
 
 		//path to maven
 		String pathOfProject = System.getProperty("user.dir");
-		String path = pathOfProject + "\\" + "chat\\res\\" + "iconSend.jpg" ;
+		String path = pathOfProject + "\\" + "chat\\src\\main\\resources\\" + "iconSend.jpg" ;
 		Icon icon = new ImageIcon(path);
 		sendMessage=new JButton(icon);
 		sendMessage.setPreferredSize(new Dimension(33, 20));

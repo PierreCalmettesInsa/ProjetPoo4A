@@ -19,12 +19,16 @@ public class Minimizer {
         }
         final PopupMenu popup = new PopupMenu();
 
+        /*
         String pathOfProject = System.getProperty("user.dir");
-        String path = pathOfProject + "\\" + "chat\\res\\" + "iconSend.jpg" ;
+        String path = pathOfProject + "\\" + "chat\\src\\main\\resources\\" + "iconSend.jpg" ;
+        */
+
+
 
 
         //Use it to get the image
-        Image img = Toolkit.getDefaultToolkit().getImage(path);
+        Image img = Toolkit.getDefaultToolkit().getImage("/iconSend.jpg");
 
         trayIcon = new TrayIcon(img, "Application Name", popup);
 
