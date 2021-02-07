@@ -1,6 +1,7 @@
 package jar;
 
 import java.awt.*;
+import java.net.URL;
 
 
 public class Minimizer {
@@ -28,9 +29,14 @@ public class Minimizer {
 
 
         //Use it to get the image
-        Image img = Toolkit.getDefaultToolkit().getImage("/iconSend.jpg");
+        final URL url = Thread.currentThread().getContextClassLoader().getResource("icon.png");
+        Image img = Toolkit.getDefaultToolkit().getImage(url);
+        int trayIconWidth = new TrayIcon(img).getSize().width;
+        //String pathOfImg = System.getProperty("user.dir") + "\\chat-3.6.3-jar-with-dependencies.jar\\iconSend.jpg";
+        //System.out.println(pathOfImg);
+        
 
-        trayIcon = new TrayIcon(img, "Application Name", popup);
+        trayIcon = new TrayIcon(img.getScaledInstance(trayIconWidth, -1, Image.SCALE_SMOOTH), "Application Name", popup);
 
         tray = SystemTray.getSystemTray();
     
