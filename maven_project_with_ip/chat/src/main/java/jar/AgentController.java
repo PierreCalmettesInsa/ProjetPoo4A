@@ -189,6 +189,7 @@ public class AgentController {
         if (newIp != ""){
             agentClient.address = newIp ;
             chatWindow.getIpLabel().setText("Ip : " + newIp);
+            DatabaseChat.checkDbExistsAndCreate(newIp + ".db");
         }
     }
 
