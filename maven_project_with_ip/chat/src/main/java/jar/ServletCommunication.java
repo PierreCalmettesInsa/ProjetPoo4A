@@ -2,7 +2,6 @@ package jar;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class ServletCommunication implements Runnable {

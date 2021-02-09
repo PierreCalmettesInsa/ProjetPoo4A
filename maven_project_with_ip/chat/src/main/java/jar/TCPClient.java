@@ -13,7 +13,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.concurrent.locks.ReentrantLock;
@@ -120,22 +119,17 @@ public class TCPClient implements Runnable {
 
 			try {
 				received = in.readLine();
-				System.out.println(received);
-
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 
 			msgToSend = file.getName();
-			System.out.println(msgToSend);
 			out.println(msgToSend);
 			out.flush();
 
 			try {
 				received = in.readLine();
-				System.out.println(received);
-
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -147,8 +141,6 @@ public class TCPClient implements Runnable {
 
 			try {
 				received = in.readLine();
-				System.out.println(received);
-
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -163,7 +155,6 @@ public class TCPClient implements Runnable {
 				os.write(buffer, 0, buffer.length);
 				os.flush();
 				bInput.close();
-				// os.close();
 
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
@@ -222,13 +213,11 @@ public class TCPClient implements Runnable {
 								out.flush();
 
 								String fileName = in.readLine();
-								System.out.println(fileName);
 
 								out.println("size");
 								out.flush();
 
 								received = in.readLine();
-								System.out.println(received);
 								int size = Integer.parseInt(received);
 
 								out.println("ready");

@@ -1,15 +1,14 @@
 package jar;
 
-import java.util.ArrayList;
 
 import javax.swing.*;
 import java.awt.*;
+import java.net.URL;
 
 public class MessageFrame implements Runnable{
 
 
 	// pour la chat frame
-	private ArrayList<String> messages;
 	private JFrame chatConnection;
 	private JScrollPane chatScrollPane;
 	private JTextArea chatbox;
@@ -29,9 +28,10 @@ public class MessageFrame implements Runnable{
 		JPanel southPanel=new JPanel();
 
 		//path to maven
-		String pathOfProject = System.getProperty("user.dir");
-		String path = pathOfProject + "\\" + "chat\\src\\main\\resources\\" + "iconSend.jpg" ;
-		Icon icon = new ImageIcon(path);
+		final URL url = Thread.currentThread().getContextClassLoader().getResource("iconSend.jpg");
+        Image img = Toolkit.getDefaultToolkit().getImage(url);
+		
+		Icon icon = new ImageIcon(img);
 		sendMessage=new JButton(icon);
 		sendMessage.setPreferredSize(new Dimension(33, 20));
 		sendFile = new JButton("send file") ;

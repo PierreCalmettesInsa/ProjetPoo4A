@@ -6,10 +6,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.File;
 
 
 public class ChatWindow {

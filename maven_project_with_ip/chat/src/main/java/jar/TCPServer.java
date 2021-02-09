@@ -16,7 +16,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Scanner;
 import java.util.Map.Entry;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -160,23 +159,18 @@ class AcceptedConnection implements Runnable {
 			String received;
 			try {
 				received = in.readLine();
-				System.out.println(received);
-
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 
 			msgToSend = file.getName();
-			System.out.println(msgToSend);
 
 			out.println(msgToSend);
 			out.flush();
 
 			try {
 				received = in.readLine();
-				System.out.println(received);
-
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -187,8 +181,6 @@ class AcceptedConnection implements Runnable {
 
 			try {
 				received = in.readLine();
-				System.out.println(received);
-
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -281,13 +273,11 @@ class AcceptedConnection implements Runnable {
 								out.flush();
 
 								String fileName = in.readLine();
-								System.out.println(fileName);
 
 								out.println("size");
 								out.flush();
 
 								received = in.readLine();
-								System.out.println(received);
 								int size = Integer.parseInt(received);
 
 								out.println("ready");
