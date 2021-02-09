@@ -115,7 +115,7 @@ public class AgentModel {
 		es.execute(new ClientRunnable(broadCastIp, 25555, 25554, clientUdp));
 
 		try {
-			es.awaitTermination(4, TimeUnit.SECONDS);
+			es.awaitTermination(2, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

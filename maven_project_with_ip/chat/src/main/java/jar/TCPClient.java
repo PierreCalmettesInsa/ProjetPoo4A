@@ -13,35 +13,39 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.JFileChooser;
 
 import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent ;
+import java.awt.event.WindowEvent;
 
 public class TCPClient implements Runnable {
-	
-	protected String addressDist ;
-	protected String myAddress ;
+
+	protected String addressDist;
+	protected String myAddress;
 	final Scanner scan = new Scanner(System.in);
 	private Socket s;
-	private String myPseudo ;
-	private String oPseudo ;
-	protected ChatWindow chat ;
-	protected PrintWriter out ;
-	protected BufferedReader in ;
-	protected MessageFrame msgFrame ;
+	private String myPseudo;
+	private String oPseudo;
+	protected ChatWindow chat;
+	protected PrintWriter out;
+	protected BufferedReader in;
+	protected MessageFrame msgFrame;
+	Thread receive;
 
-	
+	private ReentrantLock mutex = new ReentrantLock();
+
 	public TCPClient(String myAddress, String addressDist, Socket s, String myPseudo, String oPseudo, ChatWindow chat) {
 		this.myAddress = myAddress;
 		this.addressDist = addressDist;
 		this.s = s;
-		this.myPseudo = myPseudo ;
+		this.myPseudo = myPseudo;
 		this.oPseudo = oPseudo;
-		this.chat = chat ;
+		this.chat = chat;
 
 		try {
 			out = new PrintWriter(s.getOutputStream());
@@ -50,7 +54,7 @@ public class TCPClient implements Runnable {
 			e.printStackTrace();
 		}
 
-		//creat a new frame for the chat
+		// creat a new frame for the chat
 		msgFrame = chat.launchWindowChat();
 		try {
 			Thread.sleep(100);
@@ -58,28 +62,23 @@ public class TCPClient implements Runnable {
 			e.printStackTrace();
 		}
 
-		//Look for history, to be replace by ip address
+		// Look for history, to be replace by ip address
 		ArrayList<String> allMessagesHisto = DatabaseChat.getHistory(myAddress, addressDist);
 
-		for (String msg : allMessagesHisto){
+		for (String msg : allMessagesHisto) {
 			msgFrame.getMessageArea().append(msg + "\n");
 		}
 
-
-
-
-		//Add a listener to the button to send a message
-		initListener() ;
+		// Add a listener to the button to send a message
+		initListener();
 	}
 
-	public void initListener(){
+	public void initListener() {
 		msgFrame.getButtonSend().addActionListener(e -> send());
 		msgFrame.getButtonFile().addActionListener(e -> sendFile());
-		msgFrame.getFrame().addWindowListener(new WindowAdapter()
-		{
+		msgFrame.getFrame().addWindowListener(new WindowAdapter() {
 			@Override
-			public void windowClosing(WindowEvent e)
-			{
+			public void windowClosing(WindowEvent e) {
 				System.out.println("Closed");
 				out.close();
 				try {
@@ -92,22 +91,22 @@ public class TCPClient implements Runnable {
 		});
 	}
 
-	public void send(){
+	public void send() {
 		String msgToSend = msgFrame.getMessageField().getText();
 		msgFrame.getMessageArea().append(myPseudo + " : " + msgToSend + "\n");
 		out.println(msgToSend);
 		out.flush();
 
-		DatabaseChat.addToHistory(this.myAddress, this.addressDist,(myPseudo + " : " + msgToSend));
+		DatabaseChat.addToHistory(this.myAddress, this.addressDist, (myPseudo + " : " + msgToSend));
 	}
 
 	public void sendFile() {
 
+		mutex.lock();
+
 		String msgToSend = "---Sending file--- code : 12976#";
 		out.println(msgToSend);
 		out.flush();
-
-
 
 		JFileChooser fChooser = new JFileChooser();
 		fChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
@@ -116,40 +115,70 @@ public class TCPClient implements Runnable {
 		if (fileChosen == JFileChooser.APPROVE_OPTION) {
 			File file = fChooser.getSelectedFile();
 
+			System.out.println("sending...");
+			String received;
+
+			try {
+				received = in.readLine();
+				System.out.println(received);
+
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
 			msgToSend = file.getName();
 			System.out.println(msgToSend);
 			out.println(msgToSend);
 			out.flush();
 
+			try {
+				received = in.readLine();
+				System.out.println(received);
 
-			byte[] buffer = new byte[(int)file.length()];
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+
+			out.println(file.length());
+			out.flush();
+
+			try {
+				received = in.readLine();
+				System.out.println(received);
+
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+			byte[] buffer = new byte[(int) file.length()];
 			try {
 				FileInputStream fInput = new FileInputStream(file);
 				BufferedInputStream bInput = new BufferedInputStream(fInput);
 				bInput.read(buffer, 0, buffer.length);
 				OutputStream os = s.getOutputStream();
-				os.write(buffer,0,buffer.length);
+				os.write(buffer, 0, buffer.length);
 				os.flush();
-				System.out.println("Fini");
-
 				bInput.close();
-				//os.close();
-			
+				// os.close();
 
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}catch (IOException e) {
+			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
 		}
 
-
+		mutex.unlock();
 
 	}
-	
+
 	public void run() {
 		try {
 
@@ -163,45 +192,68 @@ public class TCPClient implements Runnable {
 
 			out.println(myPseudo);
 			out.flush();
-	
-	
 
-            
-            Thread receive = new Thread(new Runnable () {
-            	String received = "";
-            	
-            	public void run() {
-            		try {            			
-            			while(received != null) {
+			receive = new Thread(new Runnable() {
+				String received = "";
+
+				public void run() {
+					try {
+						while (received != null) {
+
+							while (mutex.isLocked()) {
+								try {
+									Thread.sleep(500);
+								} catch (InterruptedException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+							}
+
 							received = in.readLine();
-							
-							if (received != null && received.startsWith("---Sending file--- code : 12976#")){
+
+							if (received != null && received.startsWith("---Sending file--- code : 12976#")) {
 								System.out.println("Receiving file...");
 
+								out.println("Envoie de fichier");
+								out.flush();
+
+								
+								out.println("Ok suis prêt");
+								out.flush();
+
+								String fileName = in.readLine();
+								System.out.println(fileName);
+
+								out.println("size");
+								out.flush();
+
 								received = in.readLine();
-								byte [] mybytearray  = new byte [10000000];
+								System.out.println(received);
+								int size = Integer.parseInt(received);
+
+								out.println("ready");
+								out.flush();
+
+								byte [] mybytearray  = new byte [size];
 
 								InputStream is = s.getInputStream();
-								FileOutputStream fOutput = new FileOutputStream(received);
+								FileOutputStream fOutput = new FileOutputStream(fileName);
 								BufferedOutputStream bOutput = new BufferedOutputStream(fOutput);
-								int bytesRead = is.read(mybytearray,0,mybytearray.length);
-								int current = bytesRead;
+								int bytesRead = is.read(mybytearray, 0, mybytearray.length);
 
-								do {
-									bytesRead =
-										is.read(mybytearray, current, (mybytearray.length-current));
-									if(bytesRead >= 0) current += bytesRead;
-								} while(bytesRead > -1);
-
-								bOutput.write(mybytearray, 0 , current);
+								bOutput.write(mybytearray, 0, bytesRead);
 								bOutput.flush();
-								System.out.println("File " + received+ " downloaded (" + current + " bytes read)");
+								System.out.println("File " + received + " downloaded (" + bytesRead + " bytes read)");
 								bOutput.close();
 
 							} else {
-								msgFrame.getMessageArea().append(oPseudo + " : " + received + "\n");
-								DatabaseChat.addToHistory(myAddress, addressDist, (oPseudo + " : " + received) );
+								if (received != ""){
+									msgFrame.getMessageArea().append(oPseudo + " : " + received + "\n");
+									DatabaseChat.addToHistory(myAddress, addressDist, (oPseudo + " : " + received));
+								}
 							}
+
+			
 
             			}
             			

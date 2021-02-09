@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.Map.Entry;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.JFileChooser;
 
@@ -76,6 +77,9 @@ class AcceptedConnection implements Runnable {
 	protected String oPseudo;
 	protected HashMap<String, String> allPseudos;
 	protected MessageFrame msgFrame;
+	Thread receive;
+
+	private ReentrantLock mutex = new ReentrantLock();
 
 	public AcceptedConnection(String myAddress, Socket link, ChatWindow chat, String myPseudo,
 			HashMap<String, String> allPseudos) {
@@ -136,6 +140,10 @@ class AcceptedConnection implements Runnable {
 
 	public void sendFile() {
 
+
+		mutex.lock();
+
+
 		String msgToSend = "---Sending file--- code : 12976#";
 		out.println(msgToSend);
 		out.flush();
@@ -149,11 +157,42 @@ class AcceptedConnection implements Runnable {
 		if (fileChosen == JFileChooser.APPROVE_OPTION) {
 			File file = fChooser.getSelectedFile();
 
+			String received;
+			try {
+				received = in.readLine();
+				System.out.println(received);
+
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
 			msgToSend = file.getName();
 			System.out.println(msgToSend);
 
 			out.println(msgToSend);
 			out.flush();
+
+			try {
+				received = in.readLine();
+				System.out.println(received);
+
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+			out.println(file.length());
+			out.flush();
+
+			try {
+				received = in.readLine();
+				System.out.println(received);
+
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 
 
 			byte[] buffer = new byte[(int) file.length()];
@@ -164,12 +203,8 @@ class AcceptedConnection implements Runnable {
 				OutputStream os = link.getOutputStream();
 				os.write(buffer,0,buffer.length);
 				os.flush();
-				System.out.println("Fini");
-
 				bInput.close();
-				//os.close();
 			
-
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -180,6 +215,8 @@ class AcceptedConnection implements Runnable {
 
 		}
 
+
+		mutex.unlock();
 
 
 	}
@@ -214,53 +251,69 @@ class AcceptedConnection implements Runnable {
 
 
 			
-			Thread receive = new Thread(new Runnable() {
+			receive = new Thread(new Runnable() {
 				String received = "" ;
 				
 				public void run() {
 					try {
 						
 						while (received != null) {
+
+							while (mutex.isLocked()) {
+								try {
+									Thread.sleep(500);
+								} catch (InterruptedException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+							}
+
 							received = in.readLine();
 							//received.trim();
 
 							if (received != null && received.startsWith("---Sending file--- code : 12976#")){
 								System.out.println("Receiving file...");
 
+								out.println("");
+								out.flush();
+
+								out.println("Ok suis prêt");
+								out.flush();
+
+								String fileName = in.readLine();
+								System.out.println(fileName);
+
+								out.println("size");
+								out.flush();
+
 								received = in.readLine();
 								System.out.println(received);
+								int size = Integer.parseInt(received);
 
+								out.println("ready");
+								out.flush();
 
-								byte [] mybytearray  = new byte [1024];
+								byte [] mybytearray  = new byte [size];
 
 								InputStream is = link.getInputStream();
-								FileOutputStream fOutput = new FileOutputStream(received);
+								FileOutputStream fOutput = new FileOutputStream(fileName);
 								BufferedOutputStream bOutput = new BufferedOutputStream(fOutput);
 								int bytesRead = is.read(mybytearray,0,mybytearray.length);
-								int current = bytesRead;
-								System.out.println("Receiving file...");
 
-
-								do {
-									System.out.println("Receiving file...");
-
-									bytesRead = is.read(mybytearray, current, (mybytearray.length-current));
-									System.out.println("Receiving file...");
-
-									if(bytesRead >= 0) current += bytesRead;
-								} while(bytesRead > -1);
-
-								System.out.println("Receiving file...");
-
-								bOutput.write(mybytearray, 0 , current);
+								bOutput.write(mybytearray, 0 , bytesRead);
 								bOutput.flush();
-								System.out.println("File " + received+ " downloaded (" + current + " bytes read)");
+								System.out.println("File " + received+ " downloaded (" + bytesRead + " bytes read)");
 								bOutput.close();
 
 							} else {
+								if (received != ""){
 								msgFrame.getMessageArea().append(oPseudo + " : " + received + "\n");
 								DatabaseChat.addToHistory(myAddress,link.getInetAddress().getHostAddress(), (oPseudo + " : " + received ));
+								}
 							}
+
+
+
 
 						}
 						
