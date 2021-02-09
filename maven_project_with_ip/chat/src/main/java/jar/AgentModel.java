@@ -188,7 +188,7 @@ public class AgentModel {
 			connected = true;
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println("webserver innaccessible");
 		}
 
 		changeStatusServlet("online", pseudoChoisi, type);
@@ -226,12 +226,12 @@ public class AgentModel {
 					}
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				System.out.println("Webserver not joinable");
 			}
 		}
 	}
 
-	public void servletNotify() {
+	public boolean servletNotify() {
 		try {
 			URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/notify");
 
@@ -256,8 +256,10 @@ public class AgentModel {
 					this.listOfPseudo.put(name, ip);
 				}
 			}
+			return true ;
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println("Webserver not joinable");
+			return false ;
 		}
 
 	}

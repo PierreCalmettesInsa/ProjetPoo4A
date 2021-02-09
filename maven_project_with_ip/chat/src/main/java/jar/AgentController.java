@@ -17,6 +17,7 @@ import org.w3c.dom.NodeList;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+import java.awt.*;
 
 
 
@@ -46,23 +47,27 @@ public class AgentController {
         alreadyConnected = false ;
         chatWindow.getConnectionButton().addActionListener(e -> connection());
         chatWindow.getButtonChoose().addActionListener(e -> discussWith());
+        chatWindow.getButtonIp().addActionListener(e -> changeIp());
+
+        chatWindow.getIpLabel().setText("IP : " + agentClient.getIpAddr());
 
         chatWindow.getConnectionFrame().addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-                /*
-                System.out.println("Closed");
-                if (chatWindow.isOutdoorUser() && alreadyConnected){
-                    System.out.println("offline");
-                    agentClient.changeStatusServlet("offline", agentClient.getPseudo(), "outdoor");
+  
+                if (SystemTray.isSupported()) {
+                     Minimizer min = new Minimizer();
+                    initMinimizer(min);
                 }
-                */
-
-
-                Minimizer min = new Minimizer();
-                initMinimizer(min);
+                else {
+                    System.out.println("Closed");
+                    if (chatWindow.isOutdoorUser() && alreadyConnected){
+                        System.out.println("offline");
+                        agentClient.changeStatusServlet("offline", agentClient.getPseudo(), "outdoor");
+                    }
+                    System.exit(0);
+                }
                 
-		
 			}
 		});
     }
@@ -91,6 +96,7 @@ public class AgentController {
 
     public void connection(){
         String pseudo = chatWindow.getPseudoTextField().getText();
+        chatWindow.getButtonIp().setEnabled(false);
         boolean connected = false ;
 
 
@@ -175,6 +181,15 @@ public class AgentController {
             }
         }
 
+    }
+
+
+    public void changeIp(){
+        String newIp = chatWindow.getIpField().getText() ;
+        if (newIp != ""){
+            agentClient.address = newIp ;
+            chatWindow.getIpLabel().setText("Ip : " + newIp);
+        }
     }
 
 

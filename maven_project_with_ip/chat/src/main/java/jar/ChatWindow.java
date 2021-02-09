@@ -25,6 +25,12 @@ public class ChatWindow {
 	private JButton buttonConnection;
 	private JTextField fieldPseudo;
 	private JLabel enterPseudo ;
+	private JLabel ipLabel ;
+	private JButton changeIp;
+	private JTextField ipField;
+
+
+
 
 	private JComboBox<String> listPseudos;
 	private JButton choosePseudo;
@@ -84,19 +90,31 @@ public class ChatWindow {
 		frameConnection.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		frameConnection.setLocationRelativeTo(null);
 
+		ipLabel = new JLabel("IP :");
+		changeIp = new JButton("Changer d'IP") ;
+		ipField = new JTextField() ;
+
+
+
 		yesButton   = new JRadioButton("Yes");
 		noButton    = new JRadioButton("No", true);
+		JLabel outdoorQu = new JLabel("Outdoor ?");
 		
 		ButtonGroup bgroup = new ButtonGroup();
         bgroup.add(yesButton);
 		bgroup.add(noButton);
 		
 		JPanel radioPanel = new JPanel();
-        radioPanel.setLayout(new GridLayout(3, 1));
+        radioPanel.setLayout(new GridLayout(2, 1));
+		radioPanel.add(ipLabel);
+		radioPanel.add(ipField);
+		radioPanel.add(changeIp);
+		radioPanel.add(new JLabel(" "),"span, grow");
+		radioPanel.add(outdoorQu);
         radioPanel.add(yesButton);
 		radioPanel.add(noButton);
 		
-		radioPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Outdoor?"));
+		radioPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Configuration"));
 
 		frameConnection.getContentPane().add(radioPanel, BorderLayout.NORTH);
 
@@ -193,6 +211,18 @@ public class ChatWindow {
 
 	public JFrame getConnectionFrame() {
 		return this.frameConnection;
+	}
+
+	public JLabel getIpLabel(){
+		return this.ipLabel ;
+	}
+
+	public JButton getButtonIp() {
+		return this.changeIp;
+	}
+
+	public JTextField getIpField() {
+		return this.ipField ;
 	}
 
 
