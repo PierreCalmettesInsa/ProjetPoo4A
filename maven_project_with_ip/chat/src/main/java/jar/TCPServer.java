@@ -14,7 +14,9 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.concurrent.locks.ReentrantLock;
@@ -130,11 +132,17 @@ class AcceptedConnection implements Runnable {
 
 	public void send() {
 		String msgToSend = msgFrame.getMessageField().getText();
-		msgFrame.getMessageArea().append(myPseudo + " : " + msgToSend + "\n");
-		out.println(msgToSend);
-		out.flush();
+		if (msgToSend != ""){
+			SimpleDateFormat h = new SimpleDateFormat ("hh:mm");
+			Date date = new Date();
+			String time = h.format(date);
+			msgFrame.getMessageArea().append(myPseudo + "at " + time  + " : " + msgToSend + "\n");
+			msgFrame.getMessageField().setText("");
+			out.println(msgToSend);
+			out.flush();
 
-		DatabaseChat.addToHistory(myAddress, link.getInetAddress().getHostAddress(), (myPseudo + " : " + msgToSend));
+			DatabaseChat.addToHistory(myAddress, link.getInetAddress().getHostAddress(), (myPseudo + "at " + time  + " : " + msgToSend));
+		}
 	}
 
 	public void sendFile() {
@@ -160,7 +168,6 @@ class AcceptedConnection implements Runnable {
 			try {
 				received = in.readLine();
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 
@@ -172,7 +179,6 @@ class AcceptedConnection implements Runnable {
 			try {
 				received = in.readLine();
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 
@@ -182,7 +188,6 @@ class AcceptedConnection implements Runnable {
 			try {
 				received = in.readLine();
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 
@@ -198,10 +203,8 @@ class AcceptedConnection implements Runnable {
 				bInput.close();
 			
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -255,7 +258,6 @@ class AcceptedConnection implements Runnable {
 								try {
 									Thread.sleep(500);
 								} catch (InterruptedException e) {
-									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
 							}
@@ -266,7 +268,10 @@ class AcceptedConnection implements Runnable {
 							if (received != null && received.startsWith("---Sending file--- code : 12976#")){
 								System.out.println("Receiving file...");
 
-								out.println("");
+								msgFrame.getButtonSend().setEnabled(false);
+
+
+								out.println("Envoi de fichier");
 								out.flush();
 
 								out.println("Ok suis prêt");
@@ -295,10 +300,16 @@ class AcceptedConnection implements Runnable {
 								System.out.println("File " + received+ " downloaded (" + bytesRead + " bytes read)");
 								bOutput.close();
 
+								msgFrame.getButtonSend().setEnabled(true);
+
+
 							} else {
 								if (received != ""){
-								msgFrame.getMessageArea().append(oPseudo + " : " + received + "\n");
-								DatabaseChat.addToHistory(myAddress,link.getInetAddress().getHostAddress(), (oPseudo + " : " + received ));
+								SimpleDateFormat h = new SimpleDateFormat ("hh:mm");
+								Date date = new Date();
+								String time = h.format(date);
+								msgFrame.getMessageArea().append(oPseudo + " at " + time  +  " : " + received + "\n");
+								DatabaseChat.addToHistory(myAddress,link.getInetAddress().getHostAddress(), (oPseudo + " at " + time  +  " : " + received));
 								}
 							}
 

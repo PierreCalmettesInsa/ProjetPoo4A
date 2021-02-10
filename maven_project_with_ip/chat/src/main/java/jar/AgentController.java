@@ -31,7 +31,7 @@ public class AgentController {
         return this.agentClient ;
     }
 
-
+    //set the listeners of the chatWindow
     public void initConnectionController(){
         alreadyConnected = false ;
         chatWindow.getConnectionButton().addActionListener(e -> connection());
@@ -61,17 +61,19 @@ public class AgentController {
 		});
     }
 
-
+    //set the listeners for the minimized icon
     public void initMinimizer(Minimizer min){
         min.getDisplayMin().addActionListener(e -> displayChat(min));
         min.getExitMin().addActionListener(e -> closeChat());
     }
 
+    //handler of the button display if the minimized icon
     public void displayChat(Minimizer min){
         chatWindow.getConnectionFrame().setVisible(true);
         min.getTray().remove(min.getTrayIcon());
     }
 
+    //handler of the button exit if the minimized icon
     public void closeChat(){
         System.out.println("Closed");
         if (chatWindow.isOutdoorUser() && alreadyConnected){
@@ -121,9 +123,8 @@ public class AgentController {
 
 
     public void afterConnection(){
-        System.out.println("Connected !");
-		System.out.println("Voici la liste des utilisateurs disponibles :");
-        agentClient.displayList(agentClient.getAllPseudos());
+        //System.out.println("Connected !");
+		//System.out.println("Voici la liste des utilisateurs disponibles :");
         
                 
         ArrayList<String> listOfPSeudos = agentClient.getAllPseudos().keySet().stream().collect(Collectors.toCollection(ArrayList::new)); 

@@ -79,6 +79,7 @@ public class AgentModel {
 		return this.address;
 	}
 
+	//get the broadcast p address
 	public InetAddress getBroadcast() {
 		Enumeration<NetworkInterface> interfaces;
 		InetAddress broadcast = null;
@@ -119,22 +120,13 @@ public class AgentModel {
 
 	}
 
-	public void displayList(HashMap<String, String> list) {
-
-		for (Map.Entry<String, String> user : list.entrySet()) {
-			System.out.print(user.getKey() + " ");
-			// System.out.print(user.getValue() + " ");
-		}
-		System.out.println(" ");
-	}
-
 	public boolean sendBroadCast(String pseudoChoisi, boolean indoor) {
 
 		boolean connected = false;
 		String type = "" ; 
 
 		this.setPseudo(pseudoChoisi);
-		System.out.println("Pseudo choisit :" + this.getPseudo() + " , envoie aux autres users en cours ...");
+		//System.out.println("Pseudo choisit :" + this.getPseudo() + " , envoie aux autres users en cours ...");
 
 		if (indoor){
 			UDPClient clientUdp = new UDPClient(this.getPseudo(), this.getIpAddr(), this.getAllPseudos());
@@ -157,12 +149,8 @@ public class AgentModel {
 			}
 			this.listOfPseudo.put(this.getPseudo(), this.getIpAddr());
 
-			sendToServlet(this.getPseudo(), type);
-			
-
-		} else {
-			System.out.println("Pseudo deja utilise");
-		}
+			connected = sendToServlet(this.getPseudo(), type);
+		} 
 
 		return connected;
 
@@ -170,16 +158,13 @@ public class AgentModel {
 
 	public boolean sendToServlet(String pseudoChoisi, String type) {
 		boolean connected = false;
-
-
-		String line;
+		//String line;
 		try {
-			System.out.println("Outdoor");
 			URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/subscribe?name=" + pseudoChoisi
 					+ "&type=" + type + "&ip=" + this.getIpAddr());
 			BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
-			line = in.lines().collect(Collectors.joining());
-			System.out.println(line);
+			//line = in.lines().collect(Collectors.joining());
+			//System.out.println(line);
 			in.close();
 			connected = true;
 
@@ -187,7 +172,9 @@ public class AgentModel {
 			System.out.println("webserver innaccessible");
 		}
 
-		changeStatusServlet("online", pseudoChoisi, type);
+		if (connected){
+			changeStatusServlet("online", pseudoChoisi, type);
+		}
 
 		return connected;
 	}

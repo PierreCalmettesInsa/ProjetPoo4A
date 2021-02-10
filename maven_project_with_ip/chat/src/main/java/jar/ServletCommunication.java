@@ -2,7 +2,9 @@ package jar;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class ServletCommunication implements Runnable {
 
@@ -39,6 +41,7 @@ public class ServletCommunication implements Runnable {
         msgFrame.getFrame().addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
+                agent.sendMsgToServlet(myName, otherUserName, "// Disconnected \\ code 12548*&trf'(°5@-");
                 System.out.println("Closed");
                 e.getWindow().dispose();
             }
@@ -49,32 +52,39 @@ public class ServletCommunication implements Runnable {
         String msgToSend = msgFrame.getMessageField().getText();
 
         if (msgToSend  != "" ){
-            msgFrame.getMessageArea().append(myName + " : " + msgToSend + "\n");
+            SimpleDateFormat h = new SimpleDateFormat ("hh:mm");
+			Date date = new Date();
+			String time = h.format(date);
+            msgFrame.getMessageArea().append(myName + " at " + time + " : " + msgToSend + "\n");
 
             msgFrame.getMessageField().setText("");
 
             agent.sendMsgToServlet(myName, otherUserName, msgToSend);
 
-            DatabaseChat.addToHistory(agent.getIpAddr(), distantIpAddress, (myName + " : " + msgToSend));
+            DatabaseChat.addToHistory(agent.getIpAddr(), distantIpAddress, (myName + " at " + time + " : " + msgToSend));
         }
 
         try {
             Thread.sleep(300);
         } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
     }
 
-    public void receive() {
-
+    public boolean receive() {
         String msgReceived = agent.getMsgFromServlet(myName, otherUserName);
-
-        if (msgReceived != "") {
-            msgFrame.getMessageArea().append(otherUserName + " : " + msgReceived + "\n");
-            DatabaseChat.addToHistory(agent.getIpAddr(), distantIpAddress, (otherUserName + " : " + msgReceived));
+        if (msgReceived.trim().equals("// Disconnected \\ code 12548*&trf'(°5@-")){
+            msgFrame.getMessageArea().append("User disconnected\n");
+            return false ;
+        } else if (msgReceived != "") {
+            SimpleDateFormat h = new SimpleDateFormat ("hh:mm");
+			Date date = new Date();
+			String time = h.format(date);
+            msgFrame.getMessageArea().append(otherUserName + " at " + time + " : " + msgReceived + "\n");
+            DatabaseChat.addToHistory(agent.getIpAddr(), distantIpAddress, (otherUserName + " at " + time + " : " + msgReceived));
         }
+        return true ;
     }
 
     public void run() {
@@ -90,9 +100,9 @@ public class ServletCommunication implements Runnable {
 
         msgFrame.getMessageArea().append("Vous êtes en discussion avec : " + otherUserName + "\n");
 
-
-        while (true) {
-            receive();
+        boolean stillConnected = true ;
+        while (stillConnected) {
+            stillConnected = receive();
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {

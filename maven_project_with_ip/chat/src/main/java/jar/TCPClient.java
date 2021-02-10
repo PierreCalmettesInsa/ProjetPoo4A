@@ -13,7 +13,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Scanner;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -92,11 +94,18 @@ public class TCPClient implements Runnable {
 
 	public void send() {
 		String msgToSend = msgFrame.getMessageField().getText();
-		msgFrame.getMessageArea().append(myPseudo + " : " + msgToSend + "\n");
-		out.println(msgToSend);
-		out.flush();
 
-		DatabaseChat.addToHistory(this.myAddress, this.addressDist, (myPseudo + " : " + msgToSend));
+		if (msgToSend != ""){
+			SimpleDateFormat h = new SimpleDateFormat ("hh:mm");
+			Date date = new Date();
+			String time = h.format(date);
+			msgFrame.getMessageArea().append(myPseudo + " at " + time + " : " + msgToSend + "\n");
+			msgFrame.getMessageField().setText("");
+			out.println(msgToSend);
+			out.flush();
+
+			DatabaseChat.addToHistory(this.myAddress, this.addressDist, (myPseudo + " at " + time + " : " + msgToSend));
+		}
 	}
 
 	public void sendFile() {
@@ -120,7 +129,6 @@ public class TCPClient implements Runnable {
 			try {
 				received = in.readLine();
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 
@@ -131,7 +139,6 @@ public class TCPClient implements Runnable {
 			try {
 				received = in.readLine();
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 
@@ -142,7 +149,6 @@ public class TCPClient implements Runnable {
 			try {
 				received = in.readLine();
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 
@@ -157,10 +163,8 @@ public class TCPClient implements Runnable {
 				bInput.close();
 
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -195,17 +199,19 @@ public class TCPClient implements Runnable {
 								try {
 									Thread.sleep(500);
 								} catch (InterruptedException e) {
-									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
 							}
 
 							received = in.readLine();
 
+							//the other user is sending a file
 							if (received != null && received.startsWith("---Sending file--- code : 12976#")) {
 								System.out.println("Receiving file...");
 
-								out.println("Envoie de fichier");
+								msgFrame.getButtonSend().setEnabled(false);
+
+								out.println("Envoi de fichier");
 								out.flush();
 
 								
@@ -235,10 +241,16 @@ public class TCPClient implements Runnable {
 								System.out.println("File " + received + " downloaded (" + bytesRead + " bytes read)");
 								bOutput.close();
 
+								msgFrame.getButtonSend().setEnabled(true);
+
+
 							} else {
 								if (received != ""){
-									msgFrame.getMessageArea().append(oPseudo + " : " + received + "\n");
-									DatabaseChat.addToHistory(myAddress, addressDist, (oPseudo + " : " + received));
+									SimpleDateFormat h = new SimpleDateFormat ("hh:mm");
+									Date date = new Date();
+									String time = h.format(date);
+									msgFrame.getMessageArea().append(oPseudo + " at " + time + " : " + received + "\n");
+									DatabaseChat.addToHistory(myAddress, addressDist, (oPseudo + " at " + time + " : " + received));
 								}
 							}
 

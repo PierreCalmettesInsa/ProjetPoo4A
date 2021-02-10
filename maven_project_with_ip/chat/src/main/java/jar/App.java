@@ -13,16 +13,11 @@ public class App
     {
         int port = 25555;
         String address = "";
+
+        //Get the ip address of the host
         try {
-        InetAddress inetAddress = InetAddress.getLocalHost() ;
-        address = inetAddress.getHostAddress();
-        
-
-        if (address.equals("127.0.1.1")){
-            address = "192.168.56.101";
-        }
-
-
+            InetAddress inetAddress = InetAddress.getLocalHost() ;
+            address = inetAddress.getHostAddress();
         }
         catch (UnknownHostException e ){
             e.printStackTrace();
@@ -31,8 +26,6 @@ public class App
         System.out.println(address);
 		
 		
-		//Choisir un pseudo, dans l'invite de commande demande au user de taper un nom
-		
         AgentModel client = new AgentModel(0,address);
         DatabaseChat.checkDbExistsAndCreate(address + ".db");
         ChatWindow v = new ChatWindow();
@@ -40,6 +33,6 @@ public class App
         AgentController c = new AgentController(client,v);
         c.initConnectionController();
 
-        System.out.println("Agent creer avec comme adresse : " + address + " et comme port : " + port);
+        //System.out.println("Agent creer avec comme adresse : " + address + " et comme port : " + port);
     }
 }

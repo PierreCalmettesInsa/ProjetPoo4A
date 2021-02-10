@@ -34,6 +34,7 @@ public class UDPClient {
 		return this.allPseudos ;
 	}
 	
+	//Send a message through UDP
 	public void send(DatagramSocket server, String msg, InetAddress address, int port) {
 		byte[] buffer = (new String(msg).getBytes());
 		DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, port);
@@ -45,6 +46,7 @@ public class UDPClient {
 		
 	}
 	
+	//Receive a message through UDP
 	public DatagramPacket receive(DatagramSocket server) {
 		byte[] buffer = new byte[1024];
 		DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
@@ -94,7 +96,7 @@ public class UDPClient {
 		               {
 		            	  // System.out.println(packetPseudoToClient + " a recu une reponse du serveur, nom : " + paquetCourant);
 		            	   
-		            	   //On a recu un nom, on demande le port associe
+		            	   //On a recu un nom, on demande l'adresse
 		            	  
 		            	   send(client,"Address now",adresse, remotePort);
 	            	   
@@ -141,7 +143,7 @@ public class UDPClient {
 				DatagramSocket client = new DatagramSocket();
 				client.setBroadcast(true);
 
-				System.out.println(adresse   + "   " + remotePort);
+				//System.out.println(adresse   + "   " + remotePort);
 
 				send(client, "Send your ip", adresse, remotePort);
 		
@@ -149,13 +151,13 @@ public class UDPClient {
 				DatagramPacket packet2 = receive(client);
 				while (packet2 != null){
 					String paquetCourant = new String(packet2.getData()).trim();
-					System.out.println(paquetCourant);
+					//System.out.println(paquetCourant);
 
 					allIps.add(paquetCourant);
 					packet2 = receive(client);
 
 				}
-				System.out.println("fini");
+				//System.out.println("fini");
 
 			} catch (SocketException e) {
 				e.printStackTrace();
@@ -188,7 +190,7 @@ class ClientRunnable implements Runnable {
 	   	ArrayList<String> allIps  = client.sendBroadcast(address, remotePort2);
 	   	if (allIps != null){
 			for (String ip : allIps){
-				System.out.println(ip);
+				//System.out.println(ip);
 					client.send_pseudo(ip, remotePort1);
 			}
 		}
