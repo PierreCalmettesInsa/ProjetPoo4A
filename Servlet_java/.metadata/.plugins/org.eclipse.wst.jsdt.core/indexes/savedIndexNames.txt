@@ -1,0 +1,6 @@
+INDEX VERSION 1.4+D:\Pierre-rog\Desktop\Servlet_java\.metadata\.plugins\org.eclipse.wst.jsdt.core\indexes
+3385094398.index
+3680897914.index
+132742840.index
+918739750.index
+2777933368.index

@@ -215,7 +215,7 @@ public class TCPClient implements Runnable {
 								out.flush();
 
 								
-								out.println("Ok suis prêt");
+								out.println("Ok suis pret");
 								out.flush();
 
 								String fileName = in.readLine();

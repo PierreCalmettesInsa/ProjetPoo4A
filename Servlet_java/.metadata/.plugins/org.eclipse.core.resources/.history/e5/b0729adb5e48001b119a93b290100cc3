@@ -1,0 +1,84 @@
+package com.sdzee.servlets;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ * Servlet implementation class Subscribe
+ */
+@WebServlet("/Subscribe")
+public class Subscribe extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	private ArrayList<String> allUsers ;
+       
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public Subscribe() {
+        super();
+        allUsers = new ArrayList<String>();
+        // TODO Auto-generated constructor stub
+    }
+
+	/**
+	 * @see Servlet#init(ServletConfig)
+	 */
+	public void init(ServletConfig config) throws ServletException {
+		// TODO Auto-generated method stub
+	}
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		response.getWriter().append("Served at: ").append(request.getContextPath());
+		
+		String name = request.getParameter("name");
+		allUsers.add(name);
+		
+		response.setContentType("text/html");
+		response.setCharacterEncoding( "UTF-8" );
+		
+		PrintWriter out;
+		try {
+			out = response.getWriter();
+
+		
+		out.println("<!DOCTYPE html>");
+		out.println("<html>");
+		out.println("<head>");
+		out.println("<meta charset=\"utf-8\" />");
+		out.println("<title>Test</title>");
+		out.println("</head>");
+		out.println("<body>");
+		for (String nameInList : allUsers) {
+			out.println("<p>" + nameInList + "</p>");
+
+		}
+		out.println("</body>");
+		out.println("</html>");
+		
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		doGet(request, response);
+	}
+
+}

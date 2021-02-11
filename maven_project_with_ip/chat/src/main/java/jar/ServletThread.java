@@ -23,11 +23,11 @@ public class ServletThread implements Runnable {
 
     public void run() {
 
-        boolean webServerOk = agentClient.servletNotify();
+        boolean webServerOk = agentClient.servletNotify(agentClient.getMyType());
         lastList = agentClient.getAllPseudos().keySet().stream().collect(Collectors.toCollection(ArrayList::new));
         controller.displayConnectedUser(lastList);
         while (webServerOk) {
-            webServerOk = agentClient.servletNotify();
+            webServerOk = agentClient.servletNotify(agentClient.getMyType());
             ArrayList<String> listofPseudos = agentClient.getAllPseudos().keySet().stream().collect(Collectors.toCollection(ArrayList::new));
 
             if (!listofPseudos.equals(lastList)){

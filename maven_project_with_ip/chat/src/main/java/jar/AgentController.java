@@ -88,6 +88,9 @@ public class AgentController {
     public void connection(){
         String pseudo = chatWindow.getPseudoTextField().getText();
         chatWindow.getButtonIp().setEnabled(false);
+        
+        agentClient.setMytype(!chatWindow.isOutdoorUser());
+
         boolean connected = false ;
 
 

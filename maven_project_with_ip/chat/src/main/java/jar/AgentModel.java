@@ -1,14 +1,21 @@
 package jar;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.URI;
 import java.net.UnknownHostException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,9 +24,19 @@ import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
@@ -34,6 +51,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+
 public class AgentModel {
 
 	private int userId;
@@ -43,6 +61,7 @@ public class AgentModel {
 	private String pseudo;
 	final Scanner scanner = new Scanner(System.in);
 	private Socket clientSocket;
+	private boolean indoor ;
 
 	public AgentModel(int userId, String address) {
 		this.address = address;
@@ -53,6 +72,13 @@ public class AgentModel {
 
 	public HashMap<String, String> getAllPseudos() {
 		return this.listOfPseudo;
+	}
+
+	public boolean getMyType(){
+		return this.indoor ;
+	}
+	public void setMytype(boolean indoor){
+		this.indoor = indoor ;
 	}
 
 	public HashMap<String, String> getAllTypePseudos() {
@@ -214,7 +240,7 @@ public class AgentModel {
 		}
 	}
 
-	public boolean servletNotify() {
+	public boolean servletNotify(boolean isIndoor) {
 		try {
 			URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/notify");
 
@@ -234,9 +260,12 @@ public class AgentModel {
 
 				this.typeOfPseudo.put(name, type);
 
-				if (stateDist.trim().equals("online") && type.trim().equals("outdoor")) {
-
-					this.listOfPseudo.put(name, ip);
+				if (stateDist.trim().equals("online")  ) {
+					if (isIndoor && type.trim().equals("outdoor")){
+						this.listOfPseudo.put(name, ip);
+					} else {
+						this.listOfPseudo.put(name, ip);
+					}
 				}
 			}
 			return true ;
@@ -358,11 +387,98 @@ public class AgentModel {
 			}
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 	}
+
+	public void sendFileToServlet(String user1, String user2, File fileToSend) {
+		try {
+			String fileName = fileToSend.getName();
+		
+
+			byte[] content = Files.readAllBytes(fileToSend.toPath());
+
+
+
+			FileMessageForServlet newMessage = new FileMessageForServlet(fileName, user1, user2, content) ;
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			ObjectOutputStream out = null;
+			byte[] objetBytes = null ;
+			try {
+				out = new ObjectOutputStream(bos);   
+				out.writeObject(newMessage);
+				out.flush();
+				objetBytes = bos.toByteArray();
+
+				HttpClient client = HttpClient.newHttpClient();
+				HttpRequest request = HttpRequest.newBuilder()
+					.uri(URI.create("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/fileMessage"))
+					.POST(HttpRequest.BodyPublishers.ofByteArray(objetBytes))
+					.build();
+				client.send(request, HttpResponse.BodyHandlers.ofString());
+
+
+
+
+
+			} finally {
+				try {
+					bos.close();
+				} catch (IOException ex) {
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public String getFileFromServlet(String user1, String user2){
+		try {
+
+			HttpClient client = HttpClient.newHttpClient();
+			HttpRequest request = HttpRequest.newBuilder()
+				.uri(URI.create("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/fileMessage?user1=" + user1 + "&user2=" + user2))
+				.build();
+			// Receives the response body as an InputStream
+			HttpResponse<InputStream> response = client.send(request, BodyHandlers.ofInputStream());
+
+			if (response.statusCode() == 403){
+				return "";
+			} else {
+
+
+				ObjectInputStream inObj = new ObjectInputStream(response.body());
+				FileMessageForServlet myFile = (FileMessageForServlet)inObj.readObject();
+
+				String fileName = myFile.getFileName() ;
+				
+				byte[] content = myFile.getFileContent() ;
+
+				FileOutputStream fOutput = new FileOutputStream(fileName);
+				BufferedOutputStream bOutput = new BufferedOutputStream(fOutput);
+				bOutput.write(content);
+				bOutput.flush();
+				System.out.println("File " + fileName);
+				bOutput.close();
+
+
+
+				return  "Fichier envoyé" ;
+			}
+			
+
+		}
+		catch (Exception e){
+			return "" ;
+
+		}
+
+
+	}
+
 
 	public String getMsgFromServlet(String user1, String user2){
 		String msg = "";

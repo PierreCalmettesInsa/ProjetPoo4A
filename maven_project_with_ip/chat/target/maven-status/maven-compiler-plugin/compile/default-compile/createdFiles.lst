@@ -9,6 +9,7 @@ jar\TCPClient$1.class
 jar\MessageFrame.class
 jar\AgentController$1.class
 jar\ChatWindow$1.class
+jar\FileMessageForServlet.class
 jar\TCPServer.class
 jar\UDPServer$2.class
 jar\Minimizer.class

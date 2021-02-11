@@ -2,9 +2,12 @@ package jar;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+
+import javax.swing.JFileChooser;
 
 public class ServletCommunication implements Runnable {
 
@@ -37,11 +40,12 @@ public class ServletCommunication implements Runnable {
 
     public void initListener() {
         msgFrame.getButtonSend().addActionListener(e -> send());
+        msgFrame.getButtonFile().addActionListener(e -> sendFile());
 
         msgFrame.getFrame().addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                agent.sendMsgToServlet(myName, otherUserName, "// Disconnected \\ code 12548*&trf'(°5@-");
+                agent.sendMsgToServlet(myName, otherUserName, "// Disconnected \\ code 12548trfsg58K");
                 System.out.println("Closed");
                 e.getWindow().dispose();
             }
@@ -72,9 +76,33 @@ public class ServletCommunication implements Runnable {
 
     }
 
+
+    public void sendFile(){
+
+        JFileChooser fChooser = new JFileChooser();
+		fChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+		int fileChosen = fChooser.showOpenDialog(msgFrame.getFrame());
+
+		if (fileChosen == JFileChooser.APPROVE_OPTION) {
+			File file = fChooser.getSelectedFile();
+
+            agent.sendFileToServlet(myName, otherUserName, file);
+
+            SimpleDateFormat h = new SimpleDateFormat ("hh:mm");
+			Date date = new Date();
+			String time = h.format(date);
+            msgFrame.getMessageArea().append(myName + " at " + time + " : " + "Fichier envoyé" + "\n");
+
+            DatabaseChat.addToHistory(agent.getIpAddr(), distantIpAddress, (myName + " at " + time + " : " + "Fichier envoyé\n"));
+
+        }
+
+
+    }
+
     public boolean receive() {
         String msgReceived = agent.getMsgFromServlet(myName, otherUserName);
-        if (msgReceived.trim().equals("// Disconnected \\ code 12548*&trf'(°5@-")){
+        if (msgReceived.trim().equals("// Disconnected \\ code 12548trfsg58K")){
             msgFrame.getMessageArea().append("User disconnected\n");
             return false ;
         } else if (msgReceived != "") {
@@ -85,6 +113,18 @@ public class ServletCommunication implements Runnable {
             DatabaseChat.addToHistory(agent.getIpAddr(), distantIpAddress, (otherUserName + " at " + time + " : " + msgReceived));
         }
         return true ;
+    }
+
+    public void receiveFile() {
+        String msgReceived = agent.getFileFromServlet(myName, otherUserName);
+
+        if (msgReceived != ""){
+            SimpleDateFormat h = new SimpleDateFormat ("hh:mm");
+            Date date = new Date();
+            String time = h.format(date);
+            msgFrame.getMessageArea().append(otherUserName + " at " + time + " : " + msgReceived + "\n");
+            DatabaseChat.addToHistory(agent.getIpAddr(), distantIpAddress, (otherUserName + " at " + time + " : " + msgReceived));
+        }
     }
 
     public void run() {
@@ -103,8 +143,9 @@ public class ServletCommunication implements Runnable {
         boolean stillConnected = true ;
         while (stillConnected) {
             stillConnected = receive();
+            receiveFile() ;
             try {
-                Thread.sleep(100);
+                Thread.sleep(300);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

@@ -274,7 +274,7 @@ class AcceptedConnection implements Runnable {
 								out.println("Envoi de fichier");
 								out.flush();
 
-								out.println("Ok suis prêt");
+								out.println("Ok suis pret");
 								out.flush();
 
 								String fileName = in.readLine();
