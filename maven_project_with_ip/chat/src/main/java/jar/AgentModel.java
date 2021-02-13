@@ -175,14 +175,14 @@ public class AgentModel {
 			}
 			this.listOfPseudo.put(this.getPseudo(), this.getIpAddr());
 
-			connected = sendToServlet(this.getPseudo(), type);
+			connected = sendToServlet(this.getPseudo(), type, indoor);
 		} 
 
 		return connected;
 
 	}
 
-	public boolean sendToServlet(String pseudoChoisi, String type) {
+	public boolean sendToServlet(String pseudoChoisi, String type, boolean indoor) {
 		boolean connected = false;
 		//String line;
 		try {
@@ -195,29 +195,31 @@ public class AgentModel {
 			connected = true;
 
 		} catch (Exception e) {
-			System.out.println("webserver innaccessible");
+			System.out.println("webserver innaccessible ou pseudo incorrect");
+			return false ;
 		}
 
 		if (connected){
-			changeStatusServlet("online", pseudoChoisi, type);
+			changeStatusServlet("online", pseudoChoisi, type, indoor);
 		}
 
 		return connected;
 	}
 
-	public void changeStatusServlet(String status, String pseudoChoisi, String myType) {
-		if (status == "offline") {
-			this.listOfPseudo.clear();
-		} else {
-			try {
-				System.out.println(status);
-				URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/publish?name=" + pseudoChoisi
-						+ "&state=" + status + "&ip=" + this.getIpAddr() + "&type=" + myType);
+	public void changeStatusServlet(String status, String pseudoChoisi, String myType, boolean isIndoor) {
 
-				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-				DocumentBuilder db = dbf.newDocumentBuilder();
-				Document doc = db.parse(url.openStream());
+		try {
+			System.out.println(status);
+			URL url = new URL("https://srv-gei-tomcat.insa-toulouse.fr/chatServletA2-2/publish?name=" + pseudoChoisi
+					+ "&state=" + status + "&ip=" + this.getIpAddr() + "&type=" + myType);
 
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			Document doc = db.parse(url.openStream());
+
+			if (status == "offline"){
+				this.listOfPseudo.clear();
+			} else {
 				NodeList node = doc.getElementsByTagName("user");
 
 				for (int i = 0; i < node.getLength(); i++) {
@@ -230,13 +232,17 @@ public class AgentModel {
 
 					this.typeOfPseudo.put(name, type);
 
-					if (stateDist.trim().equals("online") && type == "outdoor") {
-						this.listOfPseudo.put(name, ip);
+					if (stateDist.trim().equals("online")  ) {
+						if (isIndoor && type.trim().equals("outdoor")){
+							this.listOfPseudo.put(name, ip);
+						} else {
+							this.listOfPseudo.put(name, ip);
+						}
 					}
 				}
-			} catch (Exception e) {
-				System.out.println("Webserver not joinable");
 			}
+		} catch (Exception e) {
+			System.out.println("Webserver not joinable");
 		}
 	}
 

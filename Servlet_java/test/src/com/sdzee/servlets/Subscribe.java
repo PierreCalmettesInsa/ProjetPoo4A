@@ -32,43 +32,56 @@ public class Subscribe extends HttpServlet {
 		String name = request.getParameter("name");
 		String type = request.getParameter("type");
 		String ip = request.getParameter("ip");
-
 		
-		AllUsers.addToList(ip, name, type, "offline");
-		HashMap<String, User>  list  = AllUsers.getList();
+		boolean pseudoOk = true ;
 		
-		response.setContentType("text/xml");
-		response.setCharacterEncoding( "UTF-8" );
-		
-		PrintWriter out;
-		try {
-			out = response.getWriter();
-
-		
-		
-			out.println("<users>");
-			
-			for (Entry<String, User> e : list.entrySet()) {
-				out.println("<user>");
-	
-				String ipE = e.getKey();
-				User userE = e.getValue();
-				String nameE = userE.name ;
-				String typeE = userE.type ;
-				out.println("<name>" + nameE + "</name>");
-				out.println("<type>" + typeE + "</type>");
-				out.println("<ip>" + ipE + "</ip>");
-
-				out.println("</user>");
-
-			
+		User userWithSameName = AllUsers.getKeyByValue(AllUsers.getList(), name);
+		if (userWithSameName != null) {
+			String ipWithSameName = userWithSameName.name ; 
+			String stateOfSameName = userWithSameName.state ;
+			if (!ip.equals(ipWithSameName) && stateOfSameName.equals("online") ) {
+				response.sendError(403);
+				pseudoOk = false ;
 			}
+		}
 		
-			out.println("</users>");
-
+		if (pseudoOk) {
+			AllUsers.addToList(ip, name, type, "offline");
+			HashMap<String, User>  list  = AllUsers.getList();
+			
+			response.setContentType("text/xml");
+			response.setCharacterEncoding( "UTF-8" );
+			
+			PrintWriter out;
+			try {
+				out = response.getWriter();
+	
+			
+			
+				out.println("<users>");
+				
+				for (Entry<String, User> e : list.entrySet()) {
+					out.println("<user>");
 		
-		} catch (IOException e) {
-			e.printStackTrace();
+					String ipE = e.getKey();
+					User userE = e.getValue();
+					String nameE = userE.name ;
+					String typeE = userE.type ;
+					out.println("<name>" + nameE + "</name>");
+					out.println("<type>" + typeE + "</type>");
+					out.println("<ip>" + ipE + "</ip>");
+	
+					out.println("</user>");
+	
+				
+				}
+			
+				out.println("</users>");
+	
+			
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

@@ -52,7 +52,7 @@ public class AgentController {
                     System.out.println("Closed");
                     if (chatWindow.isOutdoorUser() && alreadyConnected){
                         System.out.println("offline");
-                        agentClient.changeStatusServlet("offline", agentClient.getPseudo(), "outdoor");
+                        agentClient.changeStatusServlet("offline", agentClient.getPseudo(), "outdoor", !chatWindow.isOutdoorUser());
                     }
                     System.exit(0);
                 }
@@ -78,7 +78,7 @@ public class AgentController {
         System.out.println("Closed");
         if (chatWindow.isOutdoorUser() && alreadyConnected){
             System.out.println("offline");
-            agentClient.changeStatusServlet("offline", agentClient.getPseudo(), "outdoor");
+            agentClient.changeStatusServlet("offline", agentClient.getPseudo(), "outdoor", !chatWindow.isOutdoorUser());
         }
         System.exit(0);
 

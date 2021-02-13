@@ -1,6 +1,7 @@
 package com.sdzee.beans;
 
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 public class AllUsers {
 	
@@ -15,8 +16,17 @@ public class AllUsers {
 		usersList.put(ip, user);
 	}
 	
+	public static User getKeyByValue(HashMap<String,User> map, String name) {
+	    for (Entry<String, User> entry : map.entrySet()) {
+	        if (entry.getValue().name != null && entry.getValue().name.equals(name)) {
+	        	User user = new User(entry.getKey(), entry.getValue().type, entry.getValue().state );
+	            return user;
+	        }
+	    }
+	    return null;
+	}
+	
 
-		
 	
 
 }
